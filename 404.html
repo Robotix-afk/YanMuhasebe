@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yönlendiriliyor… | YanMuhasebe</title>
+<meta name="robots" content="noindex">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#e2e8f0}
+.box{text-align:center;padding:32px 22px;max-width:440px}
+.logo{font-weight:800;font-size:26px;letter-spacing:-.03em}
+.logo b{color:#a3e635}
+.badge{display:inline-block;margin:14px 0 10px;padding:6px 14px;border-radius:999px;
+background:rgba(163,230,53,.14);color:#bef264;font-size:12px;font-weight:700}
+p{color:#94a3b8;font-size:14px;line-height:1.55;margin:8px 0 0}
+.spin{width:30px;height:30px;border:3px solid #334155;border-top-color:#a3e635;border-radius:50%;
+margin:20px auto 0;animation:s .7s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.fallback{display:none;margin-top:20px}
+.fallback a{display:inline-block;margin:6px 4px 0;padding:11px 18px;border-radius:10px;
+background:#a3e635;color:#0f172a;font-weight:700;text-decoration:none;font-size:14px}
+.fallback a.ghost{background:transparent;color:#a3e635;border:1px solid #334155}
+code{font-size:12px;color:#64748b;word-break:break-all}
+</style>
+<script>
+(function(){
+  var l = location, host = l.hostname || '';
+  var keep = /github\.io$/i.test(host) ? 1 : 0;
+  var seg = l.pathname.split('/').filter(Boolean);
+  var base = '/' + seg.slice(0, keep).join('/');
+  if (base.slice(-1) !== '/') base += '/';
+  var rest = seg.slice(keep).join('/').replace(/\/?(index|404)\.html$/i, '').replace(/\/+$/, '');
+  var restLower = (rest || '').toLowerCase();
+  var hash = l.hash || '', search = l.search || '';
+
+  if (restLower === 'yanmali' || restLower.indexOf('yanmali/') === 0) {
+    var sub = restLower === 'yanmali' ? '' : rest.slice(rest.toLowerCase().indexOf('yanmali') + 7).replace(/^\/+/, '');
+    l.replace('https://robotix-afk.github.io/yanmali/' + (sub ? sub + '/' : '') + (hash || ''));
+    return;
+  }
+
+  var yt = restLower.match(/^(?:yt|yantedarikci|yan-siparis)(?:\/(?:siparis|magaza))?\/?(ym[a-z0-9]+)?$/i);
+  if (yt) {
+    var h = yt[1] ? ('#yt=' + encodeURIComponent(yt[1])) : (hash || '');
+    if (hash && hash.indexOf('yt=') >= 0) h = hash;
+    l.replace(l.origin + base + 'index.html' + (h || ''));
+    return;
+  }
+
+  if (!rest) {
+    l.replace(l.origin + base + 'index.html' + (search || '') + (hash || ''));
+    return;
+  }
+
+  var ALIASES = {
+    'home':'dashboard', 'anasayfa':'dashboard', 'dashboard':'dashboard',
+    'giris':'giris-yap', 'login':'giris-yap', 'kayit':'kayit-ol', 'register':'kayit-ol',
+    'sifremi-unuttum':'sifremi-unuttum', 'forgot':'sifremi-unuttum',
+    'musteriler':'musteriler-cari-menusu', 'tedarikciler':'tedarikciler-cari-menusu',
+    'urunler':'urun-listesi', 'depolar':'depolar', 'varyantlar':'varyantlar',
+    'stok':'stok-ekstresi', 'ozelfiyat':'ozel-fiyat-listesi',
+    'satislar':'satislar', 'alislar':'alislar',
+    'hesaplar':'hesaplarim', 'hesaplarim':'hesaplarim',
+    'banka':'banka-hareketleri', 'banka-hareketleri':'banka-hareketleri',
+    'bankahareketleri':'banka-hareketleri', 'banka-hesaplari':'banka-hareketleri',
+    'kredi':'krediler', 'krediler':'krediler',
+    'calisanlar':'calisanlar', 'masraflar':'masraflar',
+    'demirbaslar':'demirbaslar', 'demirbas':'demirbaslar',
+    'raporlar':'raporlar', 'finansal-raporlar':'finansal-raporlar',
+    'stok-raporlari':'stok-raporlari', 'musteri-listesi-rapor':'musteri-listesi-rapor',
+    'ayarlar':'ayarlar-genel', 'profil':'profilim', 'profilim':'profilim',
+    'kullanicilar':'kullanicilar', 'tanimlar':'tanimlar',
+    'etiket':'etiket-sablonlari', 'etiket-sablonlari':'etiket-sablonlari',
+    'destek':'yardim-destek', 'yardim':'yardim-destek', 'yardim-destek':'yardim-destek',
+    'yanmali':'yanmali', 'yantedarikci':'yantedarikci', 'yan-siparis':'yantedarikci',
+    'ozellikler':'ozellikler', 'fiyatlar':'fiyatlar', 'biz-kimiz':'biz-kimiz',
+    'kullanim-kosullari':'kullanim-kosullari', 'kosullar':'kullanim-kosullari',
+    'duyurular':'duyurular', 'efatura':'e-fatura', 'e-fatura':'e-fatura',
+    'gelen-e-faturalar':'gelen-e-faturalar', 'olusturulan-e-faturalar':'olusturulan-e-faturalar'
+  };
+
+  var parts = restLower.split('/');
+  var first = parts[0];
+  var tail = parts.slice(1).join('/');
+  var mapped = ALIASES[first] || first;
+  var p = mapped + (tail ? '/' + tail : '');
+
+  var q = new URLSearchParams(search);
+  q.set('p', p);
+  var target = l.origin + base + 'index.html?' + q.toString() + (hash || '');
+  l.replace(target);
+
+  setTimeout(function(){
+    var f = document.getElementById('fb');
+    if (f) f.style.display = 'block';
+    var c = document.getElementById('path');
+    if (c) c.textContent = rest;
+  }, 1800);
+})();
+</script>
+</head>
+<body>
+  <div class="box">
+    <div class="logo">yan<b>muhasebe</b></div>
+    <div class="badge">Yönlendiriliyor</div>
+    <p>İstediğiniz sayfa açılıyor. Bir saniye bekleyin…</p>
+    <div class="spin" aria-hidden="true"></div>
+    <div class="fallback" id="fb">
+      <p>Otomatik geçiş olmadı.</p>
+      <p><code id="path"></code></p>
+      <a href="index.html">Ana sayfaya git</a>
+      <a class="ghost" href="index.html?p=banka-hareketleri">Banka Hareketleri</a>
+    </div>
+  </div>
+</body>
+</html>

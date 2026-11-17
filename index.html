@@ -5578,7 +5578,12 @@ function go(page) {
   var P = (typeof window !== 'undefined' && window.pages) ? window.pages : (typeof pages !== 'undefined' ? pages : {});
   var fn = (P && P[page]) || (P && P.home);
   try {
-    document.getElementById('content').innerHTML = (function(){ var html = typeof fn === 'function' ? fn() : '<div class="card"><div class="card-b">Sayfa bulunamadı</div></div>'; try { if (typeof ymEmailVerifyBanner==='function' && state.user) html = ymEmailVerifyBanner() + html; } catch(e){} return html;})();
+    document.getElementById('content').innerHTML = (function(){ var html = typeof fn === 'function' ? fn() : '<div class="card" style="max-width:480px;margin:40px auto"><div class="card-b" style="text-align:center;padding:28px">' +
+          '<div style="font-size:42px;font-weight:900;color:#a3e635;margin-bottom:8px">404</div>' +
+          '<h3 style="margin:0 0 8px">Sayfa bulunamadı</h3>' +
+          '<p style="color:#64748b;margin:0 0 16px">Bu menü henüz yok veya adresi hatalı.</p>' +
+          '<button type="button" class="btn btn-lime" onclick="go(\'home\')">Ana Sayfaya Dön</button>' +
+          '</div></div>'; try { if (typeof ymEmailVerifyBanner==='function' && state.user) html = ymEmailVerifyBanner() + html; } catch(e){} return html;})();
   } catch (err) {
     console.error(err);
     document.getElementById('content').innerHTML = '<div class="card"><div class="card-b"><p>Sayfa yüklenemedi: ' + esc(err.message) + '</p></div></div>';
@@ -13841,6 +13846,7 @@ window.bankaHareketKaydet = function() {
   go('bankaHareketleri');
   toast('Hareket kaydedildi');
 };
+try { window.pages = window.pages || pages; window.pages.bankaHareketleri = pages.bankaHareketleri; } catch (e) {}
 window.bankaHareketSil = function(id) {
   ymConfirm('Hareket silinsin mi? Bakiye geri alınır.', { title: 'Sil', okText: 'Sil', danger: true }).then(function(ok) {
     if (!ok) return;
