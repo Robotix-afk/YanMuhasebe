@@ -13910,17 +13910,19 @@ function bankaHesapDetail(id) {
 window.bankaGuncelleModal = function(id) {
   var h = ymBankaHesaplar().find(function(x){ return x.id === id; });
   if (!h) return toast('Hesap bulunamadı');
+  var safeId = String(id).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   openModal('Hesap Güncelleme',
     '<div class="field"><label>Hesap Adı</label><input class="input" id="bg_ad" value="' + esc(h.ad || h.banka || '') + '"></div>' +
     '<div class="field"><label>Etiket Rengi</label><input class="input" id="bg_renk" type="color" value="' + esc(h.etiketRenk || '#f5e6c8') + '" style="height:40px;padding:4px;max-width:80px"></div>' +
     '<div class="field"><label>Hesap No</label><input class="input" id="bg_no" value="' + esc(h.hesapKodu || h.hesapNo || '') + '" placeholder="isteğe bağlı"></div>' +
     '<div class="field"><label>IBAN</label><input class="input" id="bg_iban" value="' + esc(h.iban || '') + '"></div>' +
     '<div class="field"><label>Güncel Bakiye</label><input class="input" id="bg_bakiye" type="number" step="0.01" value="' + (Number(h.bakiye)||0) + '"></div>',
-    '<button type="button" class="btn" style="background:#ef4444;color:#fff;border:0" onclick="bankaHesapSil(\\'' + id + '\\')">Hesabı Sil</button>' +
-    '<button type="button" class="btn" style="background:#f59e0b;color:#fff;border:0" onclick="bankaHesapPasif(\\'' + id + '\\)">' + (h.pasif ? 'Hesabı Aktif Yap' : 'Hesabı Pasif Yap') + '</button>' +
-    '<button type="button" class="btn btn-lime" onclick="bankaGuncelleKaydet(\\'' + id + '\\')">Kaydet</button>'
+    '<button type="button" class="btn" style="background:#ef4444;color:#fff;border:0" onclick="bankaHesapSil(\'' + safeId + '\')">Hesabı Sil</button>' +
+    '<button type="button" class="btn" style="background:#f59e0b;color:#fff;border:0" onclick="bankaHesapPasif(\'' + safeId + '\')">' + (h.pasif ? 'Hesabı Aktif Yap' : 'Hesabı Pasif Yap') + '</button>' +
+    '<button type="button" class="btn btn-lime" onclick="bankaGuncelleKaydet(\'' + safeId + '\')">Kaydet</button>'
   );
 };
+
 window.bankaGuncelleKaydet = function(id) {
   var list = ymBankaHesaplar();
   var h = list.find(function(x){ return x.id === id; });
