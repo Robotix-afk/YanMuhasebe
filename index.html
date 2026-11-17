@@ -10927,20 +10927,44 @@ function alisKalemModal(u){
   var cariPara=(typeof getBelgeCariPara==='function'?getBelgeCariPara():'TL')||'TL';
   var curOpts=['TL','USD','EUR','GBP','CHF','AZN','SAR','AED'].map(function(c){return '<option value="'+c+'"'+(c===urunPara?' selected':'')+'>'+c+'</option>';}).join('');
   var rawKombs = Array.isArray(u.varyantKomblari) ? u.varyantKomblari : [];
-  // Sadece adı dolu gerçek varyantlar
-  var kombs = rawKombs.map(function(k,i){ return { k:k, i:i }; }).filter(function(x){
-    return x.k && String(x.k.ad||'').trim().length > 0;
+  // Adı olan tüm varyant kombinasyonları (boş satırları ele)
+  var kombs = rawKombs.map(function(kk,i){ return { k:kk, i:i }; }).filter(function(x){
+    if (!x.k) return false;
+    var nm = String(x.k.ad||x.k.isim||x.k.name||'').trim();
+    if (nm) return true;
+    // bazen degerler dizisi
+    if (Array.isArray(x.k.degerler) && x.k.degerler.length) return true;
+    return false;
   });
+  function varStok(vk){
+    var s = vk && (vk.stok!=null ? vk.stok : (vk.miktar!=null ? vk.miktar : vk.adet));
+    return Number(s)||0;
+  }
+  function varAd(vk){
+    var nm = String((vk&&(vk.ad||vk.isim||vk.name))||'').trim();
+    if (!nm && vk && Array.isArray(vk.degerler)) nm = vk.degerler.join(' -- ');
+    return nm || 'Varyant';
+  }
   var varHtml = '';
   if (kombs.length) {
-    varHtml = '<div class="field"><label>Varyant</label><select id="kl_varyant" class="input" onchange="alisKalemVaryantDegisti()">'+
-      '<option value="">Ana ürün (varyantsız)</option>'+
-      kombs.map(function(x){
-        var k=x.k, i=x.i;
-        var lab = String(k.ad).trim() + (k.barkod ? ' · '+k.barkod : '') + (k.alis!=null&&k.alis!=='' ? ' · alış '+k.alis : '');
-        return '<option value="'+i+'">'+esc(lab)+'</option>';
-      }).join('')+
-      '</select><div class="hint">Varsa varyant seçin; etiket o barkodla basılır. Boş bırakırsanız ana ürün kullanılır.</div></div>';
+    // BizimHesap tarzı: Ürün Seçenekleri → "Ürün -- varyant (X ad)"
+    var urunAd = String(u.ad||'Ürün').trim();
+    varHtml = '<div class="field" style="background:#fffbeb;padding:10px;border-radius:8px;border:1px solid #fde68a">' +
+      '<label style="font-weight:700">Ürün Seçenekleri</label>' +
+      '<select id="kl_varyant" class="input" onchange="alisKalemVaryantDegisti()">' +
+      kombs.map(function(x, idx){
+        var kk=x.k, i=x.i;
+        var vad = varAd(kk);
+        var lab = urunAd + ' -- ' + vad + ' (' + varStok(kk) + ' ad)';
+        // ilk seçenek varsayılan selected
+        return '<option value="'+i+'"'+(idx===0?' selected':'')+'>'+esc(lab)+'</option>';
+      }).join('') +
+      '</select>' +
+      '<div class="hint" style="margin-top:4px">Alış, seçtiğiniz varyanta göre kaydedilir ve stok o varyanta işlenir.</div></div>';
+    // varsayılan fiyatı ilk varyanttan al
+    var first = kombs[0].k;
+    if (first && first.alis != null && first.alis !== '') fiyat = Number(first.alis)||fiyat;
+    else if (first && first.satis != null && first.satis !== '') fiyat = Number(first.satis)||fiyat;
   }
   var body='<div class="kalem-box">'+varHtml+'<div class="uf-row"><div class="field"><label>Miktar (Ad)</label><input id="kl_miktar" class="input" type="number" step="0.01" value="1" oninput="kalemHesapla()"></div><div class="field"><label>Depo</label><select id="kl_depo" class="input">'+dep+'</select></div></div>'+
    '<div class="kalem-fiyat-row"><div class="field"><label>Fiyat</label><div class="uf-row"><input id="kl_fiyat" class="input" type="number" step="0.01" value="'+fiyat+'" oninput="kalemHesapla()"><select id="kl_para" class="input" style="max-width:70px" onchange="kalemParaDegisti()">'+curOpts+'</select></div>'+
@@ -10977,14 +11001,16 @@ window.alisKalemEkle=function(){var g=function(i){return (document.getElementByI
   }
   var d=g('kl_depo'),dd=(dbGet('depolar')||[]).find(function(x){return String(x.id)===String(d)});
   var vi = g('kl_varyant');
-  // Varyant zorunlu değil — seçildiyse kullan
-  var varyantIdx = (vi!=='' && vi!=null && !isNaN(parseInt(vi,10))) ? parseInt(vi,10) : null;
-  var varyantAd='', varyantBarkod='', varyantKod='';
   var urunId=g('kl_urun');
   var u=(dbGet('urunler')||[]).find(function(x){return String(x.id)===String(urunId);});
+  var hasVar = !!(u && Array.isArray(u.varyantKomblari) && u.varyantKomblari.some(function(vk){ return vk && String(vk.ad||vk.isim||'').trim(); }));
+  var varyantIdx = (vi!=='' && vi!=null && !isNaN(parseInt(vi,10))) ? parseInt(vi,10) : null;
+  if (hasVar && (varyantIdx==null || isNaN(varyantIdx))) return toast('Ürün seçeneği (varyant) seçin');
+  var varyantAd='', varyantBarkod='', varyantKod='';
   if (u && Array.isArray(u.varyantKomblari) && !isNaN(varyantIdx) && u.varyantKomblari[varyantIdx]) {
     var vk=u.varyantKomblari[varyantIdx];
-    varyantAd=vk.ad||'';
+    varyantAd=String(vk.ad||vk.isim||vk.name||'').trim();
+    if (!varyantAd && Array.isArray(vk.degerler)) varyantAd = vk.degerler.join(' -- ');
     varyantBarkod=vk.barkod||'';
     varyantKod=vk.kod||'';
     // barkod yoksa üret ve ürüne yaz
@@ -11000,7 +11026,7 @@ window.alisKalemEkle=function(){var g=function(i){return (document.getElementByI
     }
   }
   var lineAd=g('kl_ad');
-  if (varyantAd) lineAd=lineAd+(lineAd?' — ':'')+varyantAd;
+  if (varyantAd) lineAd = (lineAd ? (lineAd + ' -- ' + varyantAd) : varyantAd);
   state._view.lines=state._view.lines||[];
   state._view.lines.push({
     urunId:urunId,
