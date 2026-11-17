@@ -13547,11 +13547,54 @@ window.saveMasraf = function() {
   if (edit) list = list.map(function(x){ return x.id===edit ? row : x; });
   else list.push(row);
   dbSet('masraflar', list);
-  // drop from account if paid
+  // drop from account if paid + banka hareketine yaz
   if (row.odendi && row.hesapId) {
-    var hs = dbGet('hesaplar');
-    hs.forEach(function(h){ if (h.id===row.hesapId) h.bakiye = (Number(h.bakiye)||0) - tutar; });
+    var hs = dbGet('hesaplar') || [];
+    var hedef = null;
+    hs.forEach(function(h){
+      if (h.id===row.hesapId) {
+        h.bakiye = (Number(h.bakiye)||0) - tutar;
+        hedef = h;
+      }
+    });
     dbSet('hesaplar', hs);
+    // Bağlı banka hesabı varsa banka hareketlerine gider yaz
+    try {
+      var bhId = hedef && (hedef.bankaHesapId || null);
+      if (!bhId) {
+        // hesap id doğrudan banka hesabı olabilir
+        var maybe = (typeof ymBankaHesaplar === 'function' ? ymBankaHesaplar() : []).find(function(b){ return b.id === row.hesapId || b.hesapLinkId === row.hesapId; });
+        if (maybe) bhId = maybe.id;
+      }
+      if (bhId) {
+        var blist = ymBankaHesaplar();
+        var bh = blist.find(function(b){ return b.id === bhId; });
+        if (bh) {
+          bh.bakiye = (Number(bh.bakiye)||0) - tutar;
+          dbSet('bankaHesaplari', blist);
+          var har = ymBankaHareketler();
+          // aynı masraf için mükerrer yazma
+          var mid = 'msmov_' + row.id;
+          har = har.filter(function(x){ return x.id !== mid; });
+          har.push({
+            id: mid,
+            hesapId: bh.id,
+            banka: bh.banka,
+            hesapAd: bh.ad,
+            tarih: row.odemeTarih || row.tarih || new Date().toISOString().slice(0,10),
+            yon: 'cikis',
+            tip: 'Masraf / Gider',
+            tutar: tutar,
+            aciklama: (row.kalem || 'Masraf') + (row.not ? (' — ' + row.not) : ''),
+            kullanici: (typeof ymUserDisplayName==='function' ? ymUserDisplayName() : ''),
+            masrafId: row.id,
+            created: new Date().toISOString()
+          });
+          dbSet('bankaHareketleri', har);
+          if (bh.kayitTuru === 'masraf') ymSyncMasrafBankaToHesaplar(bh);
+        }
+      }
+    } catch (e) { console.warn(e); }
   }
   pushAct('Masraf kaydedildi: ' + fmtMoney(tutar));
   state._view = {};
@@ -13746,6 +13789,7 @@ function bankaSetupForm() {
     '<div style="display:grid;grid-template-columns:1fr 140px;gap:16px;align-items:start">' +
     '<div>' +
     '<div class="field"><label>* İsim Soyisim</label><input class="input" id="bs_isim" value="' + esc(d.isim || '') + '"></div>' +
+    '<div class="field"><label>Adres</label><input class="input" id="bs_adres" value="' + esc(d.adres || '') + '" placeholder="Örn: İstanbul/Bayrampaşa"></div>' +
     '<div class="field"><label>* IBAN</label><input class="input" id="bs_iban" value="' + esc(d.iban || '') + '" placeholder="TR00 0000 0000 0000 0000 0000 00"></div>' +
     '<div class="field"><label>* Hesap Tipi</label><select class="input" id="bs_tip">' +
       ['Şirket','Bireysel','Şirket/Bireysel'].map(function(x){ return '<option' + ((d.hesapTipi||'Şirket')===x?' selected':'') + '>' + x + '</option>'; }).join('') +
@@ -13759,13 +13803,14 @@ function bankaSetupForm() {
 }
 window.bankaSetupDevam = function() {
   var isim = ((document.getElementById('bs_isim') || {}).value || '').trim();
+  var adres = ((document.getElementById('bs_adres') || {}).value || '').trim();
   var iban = ((document.getElementById('bs_iban') || {}).value || '').trim();
   var tip = ((document.getElementById('bs_tip') || {}).value || 'Şirket');
   var bak = Number((document.getElementById('bs_bakiye') || {}).value) || 0;
   if (!isim) return toast('İsim soyisim girin');
   if (!iban) return toast('IBAN girin');
   var d = (state._view && state._view.draft) || {};
-  d.isim = isim; d.iban = iban; d.hesapTipi = tip; d.bakiye = bak;
+  d.isim = isim; d.adres = adres; d.iban = iban; d.hesapTipi = tip; d.bakiye = bak;
   state._view = { mode: 'kind', draft: d };
   go('bankaHareketleri');
 };
@@ -13803,6 +13848,7 @@ window.bankaIslemiBitir = function() {
     banka: d.banka,
     ad: d.isim || d.banka,
     isim: d.isim || '',
+    adres: d.adres || '',
     iban: d.iban || '',
     hesapTipi: d.hesapTipi || 'Şirket',
     hesapKodu: kod,
@@ -13915,6 +13961,7 @@ window.bankaGuncelleModal = function(id) {
     '<div class="field"><label>Hesap Adı</label><input class="input" id="bg_ad" value="' + esc(h.ad || h.banka || '') + '"></div>' +
     '<div class="field"><label>Etiket Rengi</label><input class="input" id="bg_renk" type="color" value="' + esc(h.etiketRenk || '#f5e6c8') + '" style="height:40px;padding:4px;max-width:80px"></div>' +
     '<div class="field"><label>Hesap No</label><input class="input" id="bg_no" value="' + esc(h.hesapKodu || h.hesapNo || '') + '" placeholder="isteğe bağlı"></div>' +
+    '<div class="field"><label>Adres</label><input class="input" id="bg_adres" value="' + esc(h.adres || '') + '" placeholder="Örn: İstanbul/Bayrampaşa"></div>' +
     '<div class="field"><label>IBAN</label><input class="input" id="bg_iban" value="' + esc(h.iban || '') + '"></div>' +
     '<div class="field"><label>Güncel Bakiye</label><input class="input" id="bg_bakiye" type="number" step="0.01" value="' + (Number(h.bakiye)||0) + '"></div>',
     '<button type="button" class="btn" style="background:#ef4444;color:#fff;border:0" onclick="bankaHesapSil(\'' + safeId + '\')">Hesabı Sil</button>' +
@@ -13931,6 +13978,7 @@ window.bankaGuncelleKaydet = function(id) {
   h.ad = ((document.getElementById('bg_ad')||{}).value||'').trim() || h.banka;
   h.etiketRenk = ((document.getElementById('bg_renk')||{}).value||'#f5e6c8');
   h.hesapKodu = ((document.getElementById('bg_no')||{}).value||'').trim() || h.hesapKodu;
+  h.adres = ((document.getElementById('bg_adres')||{}).value||'').trim();
   h.iban = ((document.getElementById('bg_iban')||{}).value||'').trim();
   var newBal = Number((document.getElementById('bg_bakiye')||{}).value);
   if (!isNaN(newBal) && newBal !== oldBal) {
@@ -14125,18 +14173,20 @@ window.bankaEkstrePdf = function(hesapId) {
     return '<tr><td class="d">' + esc(fmtDate(x.tarih)) + '</td><td class="a">' + esc(acik) + '</td><td class="r">' + signed + '</td><td class="r">' + nTR(run) + '</td></tr>';
   }).join('') || '<tr><td colspan="4" style="text-align:center;color:#64748b;padding:16px">Hareket yok</td></tr>';
 
-  var firma = '';
-  try { firma = (state.user && (state.user.company || state.user.name)) || 'YANMUHASEBE'; } catch (e) { firma = 'YANMUHASEBE'; }
-  var adres = '';
-  try { adres = (state.user && state.user.address) || ''; } catch (e) {}
+  var firma = h.isim || h.ad || '';
+  try { if (!firma) firma = (state.user && (state.user.company || state.user.name)) || 'YANMUHASEBE'; } catch (e) { firma = firma || 'YANMUHASEBE'; }
+  var adres = h.adres || '';
   var bankTitle = String(h.banka || 'BANKA').toUpperCase();
+  var logoHtml = '';
+  try { logoHtml = (typeof ymBankaLogoHtml === 'function') ? ymBankaLogoHtml(h.banka, 56) : ''; } catch (e) {}
+  if (!logoHtml) logoHtml = '<div style="font-size:16px;font-weight:800">' + esc(h.banka || '') + '</div>';
   var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Hesap Ekstresi - ' + bankTitle + '</title>' +
     '<style>' +
     '@page{size:A4;margin:14mm}' +
     'body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0;font-size:11px}' +
     '.wrap{padding:12px 16px}' +
     '.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px}' +
-    '.brand{font-size:18px;font-weight:800}' +
+    '.logo-wrap img{max-height:56px;max-width:160px;object-fit:contain}' +
     '.right h1{margin:0;font-size:16px;letter-spacing:.04em;text-align:right}' +
     'table.meta{font-size:11px;border-collapse:collapse}' +
     'table.meta td{padding:1px 6px 1px 0;vertical-align:top}' +
@@ -14150,8 +14200,8 @@ window.bankaEkstrePdf = function(hesapId) {
     '@media print{.noprint{display:none!important}}' +
     '</style></head><body><div class="wrap">' +
     '<div class="noprint"><button onclick="window.print()" style="padding:8px 14px;font-weight:700;cursor:pointer">Yazdır / PDF olarak kaydet</button></div>' +
-    '<div class="top"><div><div class="brand">' + esc(h.banka || '') + '</div>' +
-    '<table class="meta">' +
+    '<div class="top"><div class="logo-wrap">' + logoHtml +
+    '<table class="meta" style="margin-top:8px">' +
     '<tr><td><b>Sayın</b></td><td>: ' + esc(firma) + '</td></tr>' +
     '<tr><td><b>Adres</b></td><td>: ' + esc(adres || '—') + '</td></tr>' +
     '</table></div><div class="right">' +
@@ -14159,7 +14209,6 @@ window.bankaEkstrePdf = function(hesapId) {
     '<table class="meta" style="margin-left:auto">' +
     '<tr><td><b>Müşteri/Hesap No</b></td><td>: ' + esc(h.hesapKodu || h.hesapNo || '') + '</td></tr>' +
     '<tr><td><b>IBAN</b></td><td>: ' + esc(h.iban || '') + '</td></tr>' +
-    '<tr><td><b>Döviz Cinsi</b></td><td>: ' + esc(h.paraBirimi || 'TL') + '</td></tr>' +
     '</table></div></div>' +
     '<table class="tx"><thead><tr><th>Tarih</th><th>Açıklama</th><th class="r">Tutar</th><th class="r">Bakiye</th></tr></thead><tbody>' +
     rowsHtml + '</tbody></table>' +
