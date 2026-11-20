@@ -1808,6 +1808,72 @@ body:not(.app-open) #aiRoot { display:none !important; }
 .top-cal-btn svg{width:18px;height:18px;color:#475569}
 .top-cal-btn .d{font-size:11px;font-weight:800;color:#e11d48;line-height:1;margin-top:1px}
 .top-cal-remind{max-width:180px;font-size:11px;line-height:1.25;padding:6px 10px;border-radius:8px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-bell-wrap{position:relative;display:flex;align-items:center}
+.top-bell-btn{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;padding:0;position:relative}
+.top-bell-btn svg{width:20px;height:20px;color:#334155}
+.top-bell-btn:hover{background:#f8fafc;border-color:#cbd5e1}
+.top-bell-badge{position:absolute;top:4px;right:4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;line-height:16px;text-align:center;display:none}
+.top-bell-badge.on{display:block}
+.top-bell-panel{display:none;position:absolute;right:0;top:calc(100% + 8px);width:340px;max-width:92vw;max-height:420px;overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 16px 40px rgba(15,23,42,.18);z-index:300;padding:0}
+.top-bell-wrap.open .top-bell-panel{display:block;animation:ymPop .18s ease}
+.top-bell-panel .tbp-h{padding:12px 14px;font-weight:800;font-size:14px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center}
+.top-bell-panel .tbp-item{padding:12px 14px;border-bottom:1px solid #f8fafc;cursor:pointer;transition:background .12s}
+.top-bell-panel .tbp-item:hover{background:#f8fafc}
+.top-bell-panel .tbp-item.unread{background:#fefce8}
+.top-bell-panel .tbp-item .t{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px}
+.top-bell-panel .tbp-item .m{font-size:12px;color:#64748b;line-height:1.4}
+.top-bell-panel .tbp-item .d{font-size:11px;color:#94a3b8;margin-top:4px}
+.top-bell-panel .tbp-empty{padding:24px 14px;text-align:center;color:#94a3b8;font-size:13px}
+.top-bell-toast{display:none;position:absolute;right:0;top:calc(100% + 8px);width:280px;max-width:88vw;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 28px rgba(15,23,42,.14);padding:12px 14px;z-index:290;cursor:pointer;font-size:12.5px;line-height:1.45;color:#334155}
+.top-bell-toast.on{display:block;animation:ymPop .2s ease}
+.top-bell-toast .tb-more{color:#3b82f6;font-weight:600;margin-top:6px;display:block}
+.top-bell-wrap.open .top-bell-toast{display:none!important}
+
+/* ===== Özellik Merkezi ===== */
+.ym-fc-btn{display:flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:12.5px;font-weight:700;color:#334155;font-family:inherit}
+.ym-fc-btn:hover{background:#f8fafc;border-color:#cbd5e1}
+.ym-fc-btn svg{width:18px;height:18px;color:#0ea5e9}
+.ym-fc-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:400000;backdrop-filter:blur(2px)}
+.ym-fc-bg.open{display:block}
+.ym-fc-panel{position:fixed;top:0;right:0;height:100vh;width:min(440px,100vw);background:#fff;z-index:400001;box-shadow:-12px 0 40px rgba(15,23,42,.2);display:flex;flex-direction:column;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.ym-fc-bg.open .ym-fc-panel{transform:translateX(0)}
+.ym-fc-head{padding:16px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff}
+.ym-fc-head h2{margin:0;font-size:16px;font-weight:800;letter-spacing:-.02em;flex:1}
+.ym-fc-head p{margin:2px 0 0;font-size:11px;opacity:.75}
+.ym-fc-close{width:36px;height:36px;border-radius:8px;border:0;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;font-size:18px}
+.ym-fc-close:hover{background:rgba(255,255,255,.2)}
+.ym-fc-body{flex:1;overflow:auto;padding:14px}
+.ym-fc-search{position:relative;margin-bottom:14px}
+.ym-fc-search input{width:100%;height:42px;border:1px solid #e2e8f0;border-radius:10px;padding:0 14px 0 40px;font-size:13.5px}
+.ym-fc-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#94a3b8}
+.ym-fc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.ym-fc-card{border:1px solid #e2e8f0;border-radius:12px;padding:14px 12px;cursor:pointer;background:#fff;transition:all .15s;text-align:left}
+.ym-fc-card:hover{border-color:#7dd3fc;box-shadow:0 6px 18px rgba(14,165,233,.12);transform:translateY(-1px)}
+.ym-fc-card .ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:18px}
+.ym-fc-card .t{font-size:13px;font-weight:800;color:#0f172a;margin-bottom:2px}
+.ym-fc-card .d{font-size:11px;color:#64748b;line-height:1.35}
+.ym-fc-section{display:none;animation:ymPop .2s ease}
+.ym-fc-section.on{display:block}
+.ym-fc-back{border:0;background:none;color:#0ea5e9;font-weight:700;cursor:pointer;margin-bottom:10px;font-size:13px;padding:0}
+.ym-fc-list-item{padding:10px 12px;border:1px solid #f1f5f9;border-radius:10px;margin-bottom:8px;cursor:pointer}
+.ym-fc-list-item:hover{background:#f8fafc}
+.ym-fc-list-item .t{font-weight:700;font-size:13px}
+.ym-fc-list-item .m{font-size:12px;color:#64748b;margin-top:2px}
+.ym-fc-quick{display:flex;flex-direction:column;gap:8px}
+.ym-fc-quick button{text-align:left;padding:12px 14px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;font-weight:600;font-size:13px;cursor:pointer}
+.ym-fc-quick button:hover{background:#f0f9ff;border-color:#bae6fd}
+body.ym-dark{background:#0b1220!important;color:#e2e8f0}
+body.ym-dark .main,body.ym-dark .content,body.ym-dark .topbar,body.ym-dark .card,body.ym-dark .card-b,body.ym-dark .sec-b,body.ym-dark .modal,body.ym-dark .al-table,body.ym-dark .data{background:#111827!important;color:#e2e8f0!important;border-color:#1f2937!important}
+body.ym-dark .topbar{border-bottom-color:#1f2937!important}
+body.ym-dark .input,body.ym-dark select,body.ym-dark textarea,body.ym-dark input{background:#0f172a!important;color:#e2e8f0!important;border-color:#334155!important}
+body.ym-dark .toolbar,body.ym-dark .ym-fc-btn,body.ym-dark .top-bell-btn,body.ym-dark .top-cal-btn,body.ym-dark .user-chip{background:#1e293b!important;color:#e2e8f0!important;border-color:#334155!important}
+body.ym-dark .sec-h,body.ym-dark .card-h{filter:brightness(.9)}
+body.ym-dark .ym-fc-panel{background:#0f172a!important;color:#e2e8f0}
+body.ym-dark .ym-fc-card,body.ym-dark .ym-fc-list-item,body.ym-dark .ym-fc-quick button{background:#1e293b!important;border-color:#334155!important;color:#e2e8f0}
+body.ym-dark .ym-fc-card .t{color:#f8fafc}
+body.ym-dark table th{background:#1e293b!important;color:#94a3b8!important}
+
+
 
 
 .rp-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:8px 4px 24px}
@@ -3534,6 +3600,21 @@ tr.cari-pasif:hover td{background:#c4c8cf!important}
       </div>
       <div class="topbar-right">
         <div id="topCalRemind" class="top-cal-remind" style="display:none" onclick="go('takvim')"></div>
+        <button type="button" class="ym-fc-btn" id="ymFcBtn" title="Özellik Merkezi" onclick="ymFcOpen()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          <span>Menü</span>
+        </button>
+        <div class="top-bell-wrap" id="topBellWrap">
+          <button type="button" class="top-bell-btn" id="topBellBtn" title="Bildirimler" onclick="toggleBellPanel(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"/><path d="M9.5 17a2.5 2.5 0 0 0 5 0"/></svg>
+            <span class="top-bell-badge" id="topBellBadge">0</span>
+          </button>
+          <div class="top-bell-toast" id="topBellToast" onclick="openBellFromToast(event)"></div>
+          <div class="top-bell-panel" id="topBellPanel" onclick="event.stopPropagation()">
+            <div class="tbp-h"><span>Bildirimler</span><button type="button" class="btn btn-sm btn-ghost" style="padding:4px 8px;font-size:11px" onclick="ymBildirimOkunduHepsi()">Tümünü okundu</button></div>
+            <div id="topBellList"><div class="tbp-empty">Bildirim yok</div></div>
+          </div>
+        </div>
         <button type="button" class="top-cal-btn" id="topCalBtn" title="Takvim" onclick="go('takvim')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
           <span class="d" id="topCalDay"></span>
@@ -3551,6 +3632,71 @@ tr.cari-pasif:hover td{background:#c4c8cf!important}
       </div>
     </header>
     <div class="content" id="content"></div>
+  </div>
+</div>
+
+
+<div class="ym-fc-bg" id="ymFcBg" onclick="if(event.target===this)ymFcClose()">
+  <div class="ym-fc-panel" onclick="event.stopPropagation()">
+    <div class="ym-fc-head">
+      <div>
+        <h2>Özellik Merkezi</h2>
+        <p>Arama, bildirim, tema, yedek ve hızlı işlemler</p>
+      </div>
+      <button type="button" class="ym-fc-close" onclick="ymFcClose()" aria-label="Kapat">×</button>
+    </div>
+    <div class="ym-fc-body">
+      <div id="ymFcHome">
+        <div class="ym-fc-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+          <input id="ymFcSearch" placeholder="Akıllı ara: müşteri, ürün, belge no…" oninput="ymFcSmartSearch(this.value)" autocomplete="off">
+        </div>
+        <div id="ymFcSearchResults" style="display:none;margin-bottom:12px"></div>
+        <div class="ym-fc-grid">
+          <button type="button" class="ym-fc-card" onclick="ymFcShow('bildirim')">
+            <div class="ic" style="background:#fef3c7">🔔</div>
+            <div class="t">Bildirim Merkezi</div>
+            <div class="d">Vade, hatırlatma, uyarılar</div>
+          </button>
+          <button type="button" class="ym-fc-card" onclick="ymFcShow('takvim')">
+            <div class="ic" style="background:#dbeafe">📅</div>
+            <div class="t">Finans Takvimi</div>
+            <div class="d">Vade ve notlar</div>
+          </button>
+          <button type="button" class="ym-fc-card" onclick="ymFcToggleDark()">
+            <div class="ic" style="background:#e2e8f0">🌙</div>
+            <div class="t">Koyu Tema</div>
+            <div class="d" id="ymFcDarkLabel">Açık / koyu geçiş</div>
+          </button>
+          <button type="button" class="ym-fc-card" onclick="ymFcShow('yedek')">
+            <div class="ic" style="background:#dcfce7">💾</div>
+            <div class="t">Veri Yedekleme</div>
+            <div class="d">JSON indir / yükle</div>
+          </button>
+          <button type="button" class="ym-fc-card" onclick="ymFcShow('etiket')">
+            <div class="ic" style="background:#fce7f3">🏷️</div>
+            <div class="t">Müşteri Etiketleri</div>
+            <div class="d">Etiket tanımla ve uygula</div>
+          </button>
+          <button type="button" class="ym-fc-card" onclick="ymFcShow('karsilastir')">
+            <div class="ic" style="background:#ede9fe">📊</div>
+            <div class="t">Aylık Karşılaştırma</div>
+            <div class="d">Bu ay vs geçen ay</div>
+          </button>
+          <button type="button" class="ym-fc-card" onclick="ymFcShow('hizli')" style="grid-column:1/-1">
+            <div class="ic" style="background:#ffedd5">⚡</div>
+            <div class="t">Hızlı İşlemler</div>
+            <div class="d">Satış, alış, cari, masraf kısayolları</div>
+          </button>
+        </div>
+      </div>
+      <div id="ymFcSec_bildirim" class="ym-fc-section"></div>
+      <div id="ymFcSec_takvim" class="ym-fc-section"></div>
+      <div id="ymFcSec_yedek" class="ym-fc-section"></div>
+      <div id="ymFcSec_etiket" class="ym-fc-section"></div>
+      <div id="ymFcSec_karsilastir" class="ym-fc-section"></div>
+      <div id="ymFcSec_hizli" class="ym-fc-section"></div>
+    </div>
   </div>
 </div>
 
@@ -5414,7 +5560,6 @@ var NAV = [
   { label: 'PARA', type: 'label' },
   { id: 'grp-nakit', label: 'Nakit Yönetimi', icon: 'wallet', children: [
     { id: 'hesaplar', label: 'Hesaplarım' },
-    { id: 'bankaHareketleri', label: 'Banka Hareketleri' },
     { id: 'masraflar', label: 'Masraflar' },
     { id: 'kredi', label: 'Krediler' },
     { id: 'demirbaslar', label: 'Demirbaşlar' },
@@ -13850,6 +13995,606 @@ function ymUserDisplayName() {
   } catch (e) { return 'Kullanıcı'; }
 }
 
+
+
+/* ========== ÖZELLİK MERKEZİ ========== */
+window.ymFcOpen = function() {
+  var bg = document.getElementById('ymFcBg');
+  if (!bg) return;
+  bg.classList.add('open');
+  ymFcHome();
+  try {
+    var dark = localStorage.getItem('ym_dark') === '1';
+    var lab = document.getElementById('ymFcDarkLabel');
+    if (lab) lab.textContent = dark ? 'Şu an: Koyu (tıkla → açık)' : 'Şu an: Açık (tıkla → koyu)';
+  } catch (e) {}
+  setTimeout(function(){ var i=document.getElementById('ymFcSearch'); if(i) i.focus(); }, 200);
+};
+window.ymFcClose = function() {
+  var bg = document.getElementById('ymFcBg');
+  if (bg) bg.classList.remove('open');
+};
+window.ymFcHome = function() {
+  var home = document.getElementById('ymFcHome');
+  if (home) home.style.display = '';
+  ['bildirim','takvim','yedek','etiket','karsilastir','hizli'].forEach(function(k){
+    var el = document.getElementById('ymFcSec_' + k);
+    if (el) { el.classList.remove('on'); el.innerHTML = ''; }
+  });
+  var sr = document.getElementById('ymFcSearchResults');
+  if (sr) { sr.style.display = 'none'; sr.innerHTML = ''; }
+};
+window.ymFcShow = function(sec) {
+  var home = document.getElementById('ymFcHome');
+  if (home) home.style.display = 'none';
+  ['bildirim','takvim','yedek','etiket','karsilastir','hizli'].forEach(function(k){
+    var el = document.getElementById('ymFcSec_' + k);
+    if (!el) return;
+    if (k === sec) { el.classList.add('on'); } else { el.classList.remove('on'); el.innerHTML = ''; }
+  });
+  var box = document.getElementById('ymFcSec_' + sec);
+  if (!box) return;
+  if (sec === 'bildirim') ymFcRenderBildirim(box);
+  else if (sec === 'takvim') ymFcRenderTakvim(box);
+  else if (sec === 'yedek') ymFcRenderYedek(box);
+  else if (sec === 'etiket') ymFcRenderEtiket(box);
+  else if (sec === 'karsilastir') ymFcRenderKarsilastir(box);
+  else if (sec === 'hizli') ymFcRenderHizli(box);
+};
+
+/* Akıllı arama */
+window.ymFcSmartSearch = function(q) {
+  q = String(q || '').trim().toLowerCase();
+  var box = document.getElementById('ymFcSearchResults');
+  if (!box) return;
+  if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  var hits = [];
+  function add(tip, ad, alt, goFn) {
+    hits.push({ tip: tip, ad: ad, alt: alt, go: goFn });
+  }
+  try {
+    (dbGet('musteriler')||[]).forEach(function(m){
+      var ad = m.unvan || m.ad || '';
+      if (ad.toLowerCase().indexOf(q)>=0 || String(m.telefon||'').indexOf(q)>=0 || String(m.kod||'').toLowerCase().indexOf(q)>=0)
+        add('Müşteri', ad, m.telefon || m.kod || '', function(){ ymFcClose(); state._view={detail:m.id}; go('musteriler'); });
+    });
+    (dbGet('tedarikciler')||[]).forEach(function(m){
+      var ad = m.unvan || m.ad || '';
+      if (ad.toLowerCase().indexOf(q)>=0 || String(m.telefon||'').indexOf(q)>=0)
+        add('Tedarikçi', ad, m.telefon || '', function(){ ymFcClose(); state._view={detail:m.id}; go('tedarikciler'); });
+    });
+    (dbGet('urunler')||[]).forEach(function(u){
+      var ad = u.ad || '';
+      if (ad.toLowerCase().indexOf(q)>=0 || String(u.barkod||'').indexOf(q)>=0)
+        add('Ürün', ad, u.barkod || ('Stok: '+(u.stok||0)), function(){ ymFcClose(); state._view={edit:u.id,form:true}; go('urunler'); });
+    });
+    (dbGet('satislar')||[]).forEach(function(s){
+      var no = String(s.no||'');
+      if (no.toLowerCase().indexOf(q)>=0 || String(s.musteriAd||s.unvan||'').toLowerCase().indexOf(q)>=0)
+        add('Satış', no || 'Satış', s.musteriAd || s.unvan || '', function(){ ymFcClose(); go('satislar'); });
+    });
+    (dbGet('alislar')||[]).forEach(function(s){
+      var no = String(s.no||'');
+      if (no.toLowerCase().indexOf(q)>=0 || String(s.tedarikciAd||s.unvan||'').toLowerCase().indexOf(q)>=0)
+        add('Alış', no || 'Alış', s.tedarikciAd || s.unvan || '', function(){ ymFcClose(); go('alislar'); });
+    });
+  } catch (e) {}
+  hits = hits.slice(0, 20);
+  if (!hits.length) {
+    box.style.display = 'block';
+    box.innerHTML = '<div class="ym-fc-list-item"><div class="m">Sonuç bulunamadı</div></div>';
+    return;
+  }
+  window.__ymFcHits = hits;
+  box.style.display = 'block';
+  box.innerHTML = hits.map(function(h,i){
+    return '<div class="ym-fc-list-item" onclick="window.__ymFcHits['+i+'].go()"><div class="t">'+esc(h.tip)+': '+esc(h.ad)+'</div><div class="m">'+esc(h.alt||'')+'</div></div>';
+  }).join('');
+};
+
+/* Bildirim */
+function ymFcRenderBildirim(box) {
+  var list = (typeof ymToplaBildirimler === 'function') ? ymToplaBildirimler() : [];
+  window.__ymFcBildirim = list;
+  var html = '<button type="button" class="ym-fc-back" onclick="ymFcHome()">← Geri</button><h3 style="margin:0 0 10px;font-size:15px">Bildirim Merkezi</h3>';
+  if (!list.length) html += '<div class="ym-fc-list-item"><div class="m">Bildirim yok</div></div>';
+  else html += list.map(function(b,i){
+    return '<div class="ym-fc-list-item" onclick="ymFcClose();ymBildirimAc('+i+')"><div class="t">'+esc(b.baslik)+'</div><div class="m">'+esc(b.ozet||b.mesaj||'')+'</div></div>';
+  }).join('');
+  // ymBildirimAc uses __ymBildirimLast
+  window.__ymBildirimLast = list;
+  box.innerHTML = html;
+}
+
+/* Finans takvimi özeti */
+function ymFcRenderTakvim(box) {
+  var today = new Date();
+  var y = today.getFullYear(), m = today.getMonth();
+  var events = [];
+  try {
+    (dbGet('satislar')||[]).forEach(function(s){
+      if (!s || s.durum==='iptal') return;
+      var v = s.vade || s.vadeTarih; if (!v) return;
+      var d = new Date(v);
+      if (d.getMonth()===m && d.getFullYear()===y) events.push({t:v, tip:'Tahsilat vadesi', ad:s.musteriAd||s.unvan||s.no||''});
+    });
+    (dbGet('alislar')||[]).forEach(function(s){
+      if (!s || s.durum==='iptal') return;
+      var v = s.vade || s.vadeTarih; if (!v) return;
+      var d = new Date(v);
+      if (d.getMonth()===m && d.getFullYear()===y) events.push({t:v, tip:'Ödeme vadesi', ad:s.tedarikciAd||s.unvan||s.no||''});
+    });
+    (dbGet('hatirlatmalar')||[]).forEach(function(h){
+      if (!h) return;
+      var v = h.tarih || h.vade; if (!v) return;
+      var d = new Date(v);
+      if (d.getMonth()===m && d.getFullYear()===y) events.push({t:v, tip:'Hatırlatma', ad:h.baslik||h.mesaj||''});
+    });
+  } catch (e) {}
+  events.sort(function(a,b){ return String(a.t).localeCompare(String(b.t)); });
+  var html = '<button type="button" class="ym-fc-back" onclick="ymFcHome()">← Geri</button><h3 style="margin:0 0 10px;font-size:15px">Finans Takvimi (Bu Ay)</h3>';
+  html += '<button type="button" class="btn btn-lime" style="width:100%;margin-bottom:12px" onclick="ymFcClose();go(\'takvim\')">Tam Takvimi Aç</button>';
+  if (!events.length) html += '<div class="ym-fc-list-item"><div class="m">Bu ay vade / hatırlatma yok</div></div>';
+  else html += events.slice(0,30).map(function(e){
+    return '<div class="ym-fc-list-item"><div class="t">'+esc(e.tip)+'</div><div class="m">'+esc((typeof fmtDate==='function'?fmtDate(e.t):e.t)+' — '+e.ad)+'</div></div>';
+  }).join('');
+  box.innerHTML = html;
+}
+
+/* Koyu tema */
+window.ymFcToggleDark = function() {
+  var on = document.body.classList.toggle('ym-dark');
+  try { localStorage.setItem('ym_dark', on ? '1' : '0'); } catch (e) {}
+  var lab = document.getElementById('ymFcDarkLabel');
+  if (lab) lab.textContent = on ? 'Şu an: Koyu (tıkla → açık)' : 'Şu an: Açık (tıkla → koyu)';
+  toast(on ? 'Koyu tema açıldı' : 'Açık tema açıldı');
+};
+(function(){
+  try {
+    if (localStorage.getItem('ym_dark') === '1') document.body.classList.add('ym-dark');
+  } catch (e) {}
+})();
+
+/* Yedekleme */
+function ymFcRenderYedek(box) {
+  box.innerHTML =
+    '<button type="button" class="ym-fc-back" onclick="ymFcHome()">← Geri</button>'+
+    '<h3 style="margin:0 0 10px;font-size:15px">Veri Yedekleme</h3>'+
+    '<p style="font-size:12px;color:#64748b;line-height:1.45;margin:0 0 12px">Tüm yerel veriler (müşteri, ürün, satış, alış, hesap…) JSON olarak indirilir veya geri yüklenir. Sunucu gerekmez.</p>'+
+    '<div class="ym-fc-quick">'+
+    '<button type="button" onclick="ymFcYedekIndir()">⬇️ Yedeği İndir (JSON)</button>'+
+    '<button type="button" onclick="document.getElementById(\'ymFcYedekFile\').click()">⬆️ Yedekten Geri Yükle</button>'+
+    '<input type="file" id="ymFcYedekFile" accept="application/json,.json" style="display:none" onchange="ymFcYedekYukle(event)">'+
+    '</div>';
+}
+window.ymFcYedekIndir = function() {
+  var data = { version: 1, exportedAt: new Date().toISOString(), collections: {} };
+  var keys = (typeof CLOUD_COLLS !== 'undefined' ? CLOUD_COLLS.slice() : []);
+  ['musteriler','tedarikciler','urunler','satislar','alislar','masraflar','hesaplar','ayarlar','hatirlatmalar','etiketler','musteriEtiketleri'].forEach(function(k){
+    if (keys.indexOf(k) < 0) keys.push(k);
+  });
+  keys.forEach(function(k){
+    try { data.collections[k] = dbGet(k) || []; } catch (e) { data.collections[k] = []; }
+  });
+  try {
+    data.meta = { dark: localStorage.getItem('ym_dark'), bildirimOk: localStorage.getItem('ym_bildirim_ok') };
+  } catch (e) {}
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'yanmuhasebe_yedek_' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Yedek indirildi');
+};
+window.ymFcYedekYukle = function(ev) {
+  var f = ev.target && ev.target.files && ev.target.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function() {
+    try {
+      var data = JSON.parse(reader.result);
+      var cols = data.collections || data;
+      if (!cols || typeof cols !== 'object') throw new Error('Geçersiz dosya');
+      ymConfirm('Mevcut verilerin üzerine yazılacak. Devam?', { title: 'Yedek Yükle', okText: 'Yükle', danger: true }).then(function(ok){
+        if (!ok) return;
+        Object.keys(cols).forEach(function(k){
+          if (Array.isArray(cols[k])) {
+            try { dbSet(k, cols[k]); } catch (e) {}
+          }
+        });
+        if (data.meta) {
+          try {
+            if (data.meta.dark != null) localStorage.setItem('ym_dark', data.meta.dark);
+            if (data.meta.bildirimOk != null) localStorage.setItem('ym_bildirim_ok', data.meta.bildirimOk);
+          } catch (e) {}
+        }
+        toast('Yedek yüklendi');
+        ymFcClose();
+        try { go(state.page || 'home'); } catch (e) { location.reload(); }
+      });
+    } catch (err) {
+      toast('Yedek okunamadı: ' + (err.message || err));
+    }
+  };
+  reader.readAsText(f);
+  ev.target.value = '';
+};
+
+/* Müşteri etiketleri */
+function ymEtiketList() {
+  try { return JSON.parse(localStorage.getItem('ym_musteri_etiket_tanim') || '[]') || []; } catch (e) { return []; }
+}
+function ymEtiketSaveList(arr) {
+  try { localStorage.setItem('ym_musteri_etiket_tanim', JSON.stringify(arr || [])); } catch (e) {}
+}
+function ymMusteriEtiketMap() {
+  try { return JSON.parse(localStorage.getItem('ym_musteri_etiket_map') || '{}') || {}; } catch (e) { return {}; }
+}
+function ymMusteriEtiketMapSave(m) {
+  try { localStorage.setItem('ym_musteri_etiket_map', JSON.stringify(m || {})); } catch (e) {}
+}
+function ymFcRenderEtiket(box) {
+  var tags = ymEtiketList();
+  var map = ymMusteriEtiketMap();
+  var musteriler = [];
+  try { musteriler = dbGet('musteriler') || []; } catch (e) {}
+  var html = '<button type="button" class="ym-fc-back" onclick="ymFcHome()">← Geri</button><h3 style="margin:0 0 10px;font-size:15px">Müşteri Etiketleri</h3>';
+  html += '<div style="display:flex;gap:8px;margin-bottom:12px"><input class="input" id="ymFcTagNew" placeholder="Yeni etiket adı" style="flex:1"><button type="button" class="btn btn-lime" onclick="ymFcEtiketEkle()">Ekle</button></div>';
+  html += '<div style="margin-bottom:12px">' + (tags.length ? tags.map(function(tag){
+    return '<span style="display:inline-flex;align-items:center;gap:4px;margin:0 6px 6px 0;padding:4px 10px;border-radius:999px;background:#ecfeff;border:1px solid #a5f3fc;font-size:12px;font-weight:700">'+esc(tag)+
+      ' <button type="button" style="border:0;background:none;cursor:pointer;color:#ef4444" onclick="ymFcEtiketSil(\''+String(tag).replace(/'/g,"\\'")+'\')">×</button></span>';
+  }).join('') : '<span style="color:#94a3b8;font-size:12px">Henüz etiket yok</span>') + '</div>';
+  html += '<div style="font-size:12px;font-weight:700;margin-bottom:6px">Müşteriye uygula</div>';
+  html += musteriler.slice(0,40).map(function(m){
+    var cur = map[m.id] || [];
+    var opts = tags.map(function(tag){
+      var sel = cur.indexOf(tag)>=0 ? ' selected' : '';
+      return '<option value="'+esc(tag)+'"'+sel+'>'+esc(tag)+'</option>';
+    }).join('');
+    return '<div class="ym-fc-list-item"><div class="t">'+esc(m.unvan||m.ad||'')+'</div>'+
+      '<select multiple class="input" style="min-height:54px;margin-top:6px" data-mid="'+esc(m.id)+'" onchange="ymFcEtiketUygula(this)">'+opts+'</select></div>';
+  }).join('') || '<div class="m">Müşteri yok</div>';
+  box.innerHTML = html;
+}
+window.ymFcEtiketEkle = function() {
+  var v = ((document.getElementById('ymFcTagNew')||{}).value||'').trim();
+  if (!v) return toast('Etiket adı girin');
+  var tags = ymEtiketList();
+  if (tags.indexOf(v)>=0) return toast('Zaten var');
+  tags.push(v);
+  ymEtiketSaveList(tags);
+  ymFcShow('etiket');
+  toast('Etiket eklendi');
+};
+window.ymFcEtiketSil = function(tag) {
+  var tags = ymEtiketList().filter(function(t){ return t !== tag; });
+  ymEtiketSaveList(tags);
+  var map = ymMusteriEtiketMap();
+  Object.keys(map).forEach(function(id){
+    map[id] = (map[id]||[]).filter(function(t){ return t !== tag; });
+  });
+  ymMusteriEtiketMapSave(map);
+  ymFcShow('etiket');
+};
+window.ymFcEtiketUygula = function(sel) {
+  var mid = sel.getAttribute('data-mid');
+  var vals = Array.prototype.slice.call(sel.selectedOptions).map(function(o){ return o.value; });
+  var map = ymMusteriEtiketMap();
+  map[mid] = vals;
+  ymMusteriEtiketMapSave(map);
+  toast('Etiketler kaydedildi');
+};
+
+/* Aylık karşılaştırma */
+function ymFcMonthSum(y, m) {
+  var satis=0, alis=0, masraf=0;
+  function inMonth(d) {
+    if (!d) return false;
+    var x = new Date(d);
+    return x.getFullYear()===y && x.getMonth()===m;
+  }
+  try {
+    (dbGet('satislar')||[]).forEach(function(s){ if (s.durum!=='iptal' && inMonth(s.tarih||s.created)) satis += Number(s.tutar)||0; });
+    (dbGet('alislar')||[]).forEach(function(s){ if (s.durum!=='iptal' && inMonth(s.tarih||s.created)) alis += Number(s.tutar)||0; });
+    (dbGet('masraflar')||[]).forEach(function(s){ if (inMonth(s.tarih||s.created)) masraf += Number(s.tutar)||0; });
+  } catch (e) {}
+  return { satis: satis, alis: alis, masraf: masraf, net: satis - alis - masraf };
+}
+function ymFcRenderKarsilastir(box) {
+  var now = new Date();
+  var y = now.getFullYear(), m = now.getMonth();
+  var prevY = m===0 ? y-1 : y, prevM = m===0 ? 11 : m-1;
+  var a = ymFcMonthSum(y, m), b = ymFcMonthSum(prevY, prevM);
+  function row(label, cur, prev) {
+    var diff = cur - prev;
+    var pct = prev ? ((diff/prev)*100) : (cur?100:0);
+    var col = diff>=0 ? '#16a34a' : '#dc2626';
+    return '<div class="ym-fc-list-item"><div class="t">'+label+'</div>'+
+      '<div class="m">Bu ay: <strong>'+fmtMoney(cur)+'</strong> · Geçen ay: '+fmtMoney(prev)+
+      ' · <span style="color:'+col+';font-weight:700">'+(diff>=0?'+':'')+fmtMoney(diff)+' ('+pct.toFixed(0)+'%)</span></div></div>';
+  }
+  var months=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  box.innerHTML =
+    '<button type="button" class="ym-fc-back" onclick="ymFcHome()">← Geri</button>'+
+    '<h3 style="margin:0 0 6px;font-size:15px">Aylık Karşılaştırma</h3>'+
+    '<p style="margin:0 0 12px;font-size:12px;color:#64748b">'+months[m]+' '+y+' vs '+months[prevM]+' '+prevY+'</p>'+
+    row('Satışlar', a.satis, b.satis)+
+    row('Alışlar', a.alis, b.alis)+
+    row('Masraflar', a.masraf, b.masraf)+
+    row('Net (Satış − Alış − Masraf)', a.net, b.net);
+}
+
+/* Hızlı işlemler */
+function ymFcRenderHizli(box) {
+  box.innerHTML =
+    '<button type="button" class="ym-fc-back" onclick="ymFcHome()">← Geri</button>'+
+    '<h3 style="margin:0 0 10px;font-size:15px">Hızlı İşlemler</h3>'+
+    '<div class="ym-fc-quick">'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'satislar\')">🛒 Satışlar</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'alislar\')">📦 Alışlar</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'musteriler\')">👤 Müşteriler</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'tedarikciler\')">🏭 Tedarikçiler</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'urunler\')">🏷️ Ürünler</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'masraflar\')">💸 Masraflar</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'hesaplar\')">🏦 Hesaplarım</button>'+
+    '<button type="button" onclick="ymFcClose();go(\'takvim\')">📅 Takvim</button>'+
+    '<button type="button" onclick="ymFcClose();go(\'raporlar\')">📈 Raporlar</button>'+
+    '</div>';
+}
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') ymFcClose();
+});
+
+/* ========== BİLDİRİMLER (zil) ========== */
+function ymBildirimReadMap() {
+  try { return JSON.parse(localStorage.getItem('ym_bildirim_ok') || '{}') || {}; } catch (e) { return {}; }
+}
+function ymBildirimSetRead(id) {
+  var m = ymBildirimReadMap();
+  m[id] = true;
+  try { localStorage.setItem('ym_bildirim_ok', JSON.stringify(m)); } catch (e) {}
+}
+function ymBildirimOkunduHepsi() {
+  var list = ymToplaBildirimler();
+  var m = ymBildirimReadMap();
+  list.forEach(function(b){ m[b.id] = true; });
+  try { localStorage.setItem('ym_bildirim_ok', JSON.stringify(m)); } catch (e) {}
+  ymBildirimUIYenile();
+  toast('Tüm bildirimler okundu');
+}
+function ymToplaBildirimler() {
+  var out = [];
+  var today = new Date(); today.setHours(0,0,0,0);
+  var read = ymBildirimReadMap();
+  var uName = '';
+  try {
+    var u = state.user || {};
+    uName = u.name || u.full_name || (u.email ? String(u.email).split('@')[0] : '') || 'Kullanıcı';
+  } catch (e) { uName = 'Kullanıcı'; }
+
+  // Vadesi geçmiş satışlar (tahsilat)
+  try {
+    (dbGet('satislar') || []).forEach(function(s) {
+      if (!s || s.durum === 'iptal' || s.tip === 'proforma' || s.odendi) return;
+      var vade = s.vade || s.vadeTarih || s.tarih;
+      if (!vade) return;
+      var vd = new Date(vade); vd.setHours(0,0,0,0);
+      if (isNaN(vd.getTime()) || vd >= today) return;
+      var kalan = Number(s.kalan != null ? s.kalan : s.tutar) || 0;
+      if (kalan <= 0 && s.odemeDurum === 'odendi') return;
+      var musteri = s.musteriAd || s.cariAd || s.unvan || 'Müşteri';
+      var id = 'sat_vade_' + (s.id || s.no || Math.random());
+      out.push({
+        id: id,
+        tip: 'tahsilat',
+        baslik: 'Tahsilat vadesi geçti',
+        mesaj: 'Sn. ' + uName + ' bey yapmış olduğunuz satışın tahsilat vadesi geçmiştir. Müşteriniz olan ' + musteri + (s.no ? ' (Belge: ' + s.no + ')' : '') + '.',
+        ozet: 'Sn. ' + uName + ' bey yapmış olduğunuz satışın tahsilat vadesi geçmiştir. Müşteriniz olan ' + musteri + '…',
+        tarih: vade,
+        unread: !read[id],
+        action: function() {
+          try {
+            if (s.musteriId) { state._view = { detail: s.musteriId }; go('musteriler'); }
+            else go('satislar');
+          } catch (e) { go('satislar'); }
+        }
+      });
+    });
+  } catch (e) {}
+
+  // Vadesi geçmiş alışlar (ödeme)
+  try {
+    (dbGet('alislar') || []).forEach(function(a) {
+      if (!a || a.durum === 'iptal' || a.tip === 'proforma' || a.odendi) return;
+      var vade = a.vade || a.vadeTarih || a.tarih;
+      if (!vade) return;
+      var vd = new Date(vade); vd.setHours(0,0,0,0);
+      if (isNaN(vd.getTime()) || vd >= today) return;
+      var ted = a.tedarikciAd || a.cariAd || a.unvan || 'Tedarikçi';
+      var id = 'alis_vade_' + (a.id || a.no || Math.random());
+      out.push({
+        id: id,
+        tip: 'odeme',
+        baslik: 'Ödeme vadesi geçti',
+        mesaj: 'Tedarikçi ' + ted + ' için alış ödemesi vadesi geçmiştir' + (a.no ? ' (Belge: ' + a.no + ')' : '') + '.',
+        ozet: 'Tedarikçi ' + ted + ' için alış ödemesi vadesi geçmiştir…',
+        tarih: vade,
+        unread: !read[id],
+        action: function() {
+          try {
+            if (a.tedarikciId) { state._view = { detail: a.tedarikciId }; go('tedarikciler'); }
+            else go('alislar');
+          } catch (e) { go('alislar'); }
+        }
+      });
+    });
+  } catch (e) {}
+
+  // Hatırlatmalar
+  try {
+    (dbGet('hatirlatmalar') || []).forEach(function(h) {
+      if (!h || h.tamam || h.done) return;
+      var id = 'hat_' + (h.id || h.baslik || Math.random());
+      out.push({
+        id: id,
+        tip: 'hatirlatma',
+        baslik: h.baslik || h.baslik || 'Hatırlatma',
+        mesaj: h.mesaj || h.aciklama || h.not || 'Hatırlatmanız var.',
+        ozet: (h.mesaj || h.aciklama || h.baslik || 'Hatırlatma').slice(0, 90) + '…',
+        tarih: h.tarih || h.vade || h.created,
+        unread: !read[id],
+        action: function() { try { go('takvim'); } catch (e) {} }
+      });
+    });
+  } catch (e) {}
+
+  // Takvim hatırlatmaları (varsa)
+  try {
+    (dbGet('takvim') || dbGet('takvimNotlari') || []).forEach(function(h) {
+      if (!h) return;
+      var id = 'tk_' + (h.id || Math.random());
+      if (read[id] && h.okundu) return;
+      var dt = h.tarih ? new Date(h.tarih) : null;
+      if (dt && !isNaN(dt.getTime())) {
+        var diff = (dt - today) / 86400000;
+        if (diff > 3 || diff < -30) return;
+      }
+      out.push({
+        id: id,
+        tip: 'hatirlatma',
+        baslik: h.baslik || 'Takvim',
+        mesaj: h.not || h.aciklama || h.baslik || 'Takvim kaydı',
+        ozet: String(h.not || h.baslik || 'Takvim').slice(0, 90),
+        tarih: h.tarih || h.created,
+        unread: !read[id],
+        action: function() { go('takvim'); }
+      });
+    });
+  } catch (e) {}
+
+  // Abonelik
+  try {
+    if (typeof isSubExpired === 'function' && isSubExpired() && state.user && !(state.user.isDemo || state.user.demo)) {
+      var id = 'sub_expired';
+      out.push({
+        id: id,
+        tip: 'abonelik',
+        baslik: 'Abonelik',
+        mesaj: 'YanMuhasebe 26.11.2031 tarihine kadar ücretsizdir. Bilgilendirme bildirimi.',
+        ozet: 'Abonelik / ücretsiz kullanım bilgilendirmesi…',
+        tarih: new Date().toISOString().slice(0, 10),
+        unread: !read[id],
+        action: function() { try { go('profilim'); } catch (e) {} }
+      });
+    }
+  } catch (e) {}
+
+  out.sort(function(a, b) {
+    if (a.unread !== b.unread) return a.unread ? -1 : 1;
+    return String(b.tarih || '').localeCompare(String(a.tarih || ''));
+  });
+  return out;
+}
+window.__ymBildirimLast = null;
+function ymBildirimUIYenile() {
+  var list = ymToplaBildirimler();
+  window.__ymBildirimLast = list;
+  var unread = list.filter(function(b){ return b.unread; });
+  var badge = document.getElementById('topBellBadge');
+  if (badge) {
+    if (unread.length) {
+      badge.textContent = unread.length > 9 ? '9+' : String(unread.length);
+      badge.classList.add('on');
+    } else badge.classList.remove('on');
+  }
+  var box = document.getElementById('topBellList');
+  if (box) {
+    if (!list.length) {
+      box.innerHTML = '<div class="tbp-empty">Bildirim yok</div>';
+    } else {
+      box.innerHTML = list.map(function(b, i) {
+        return '<div class="tbp-item' + (b.unread ? ' unread' : '') + '" data-i="' + i + '" onclick="ymBildirimAc(' + i + ')">' +
+          '<div class="t">' + esc(b.baslik || 'Bildirim') + '</div>' +
+          '<div class="m">' + esc(b.mesaj || b.ozet || '') + '</div>' +
+          (b.tarih ? '<div class="d">' + esc(typeof fmtDate === 'function' ? fmtDate(b.tarih) : String(b.tarih).slice(0,10)) + '</div>' : '') +
+          '</div>';
+      }).join('');
+    }
+  }
+  // Toast özeti — okunmamış varsa ve panel kapalıysa
+  var toastEl = document.getElementById('topBellToast');
+  var wrap = document.getElementById('topBellWrap');
+  if (toastEl && wrap && !wrap.classList.contains('open')) {
+    if (unread.length) {
+      var first = unread[0];
+      toastEl.innerHTML = esc(first.ozet || first.mesaj || first.baslik || '') +
+        '<span class="tb-more">Devamı İçin Tıklayınız…</span>';
+      toastEl.classList.add('on');
+      toastEl.setAttribute('data-i', String(list.indexOf(first)));
+    } else {
+      toastEl.classList.remove('on');
+      toastEl.innerHTML = '';
+    }
+  }
+}
+window.toggleBellPanel = function(e) {
+  if (e) e.stopPropagation();
+  var wrap = document.getElementById('topBellWrap');
+  if (!wrap) return;
+  var open = wrap.classList.toggle('open');
+  try { document.getElementById('userChip') && document.getElementById('userChip').classList.remove('open'); } catch (err) {}
+  if (open) {
+    ymBildirimUIYenile();
+    var toastEl = document.getElementById('topBellToast');
+    if (toastEl) toastEl.classList.remove('on');
+  }
+};
+window.openBellFromToast = function(e) {
+  if (e) e.stopPropagation();
+  var toastEl = document.getElementById('topBellToast');
+  var i = toastEl ? parseInt(toastEl.getAttribute('data-i') || '0', 10) : 0;
+  var wrap = document.getElementById('topBellWrap');
+  if (wrap) wrap.classList.add('open');
+  ymBildirimUIYenile();
+  setTimeout(function(){ ymBildirimAc(i); }, 50);
+};
+window.ymBildirimAc = function(i) {
+  var list = window.__ymBildirimLast || ymToplaBildirimler();
+  var b = list[i];
+  if (!b) return;
+  ymBildirimSetRead(b.id);
+  ymBildirimUIYenile();
+  var wrap = document.getElementById('topBellWrap');
+  if (wrap) wrap.classList.remove('open');
+  // detay modal
+  openModal(b.baslik || 'Bildirim',
+    '<p style="margin:0;line-height:1.55;color:#334155;font-size:14px">' + esc(b.mesaj || '') + '</p>' +
+    (b.tarih ? '<p style="margin:12px 0 0;font-size:12px;color:#94a3b8">' + esc(typeof fmtDate==='function'?fmtDate(b.tarih):String(b.tarih)) + '</p>' : ''),
+    '<button type="button" class="btn btn-ghost" onclick="closeModal()">Kapat</button>' +
+    '<button type="button" class="btn btn-lime" onclick="closeModal();(window.__ymBildirimLast&&window.__ymBildirimLast[' + i + ']&&window.__ymBildirimLast[' + i + '].action&&window.__ymBildirimLast[' + i + '].action())">İlgili Sayfaya Git</button>'
+  );
+};
+document.addEventListener('click', function(ev) {
+  var wrap = document.getElementById('topBellWrap');
+  if (!wrap) return;
+  if (!wrap.contains(ev.target)) wrap.classList.remove('open');
+});
+// yenile: login sonrası ve periyodik
+(function(){
+  function tick(){ try { if (state && state.user) ymBildirimUIYenile(); } catch(e){} }
+  setTimeout(tick, 800);
+  setInterval(tick, 60000);
+  var _go = window.go;
+  if (typeof _go === 'function') {
+    window.go = function(p) {
+      var r = _go.apply(this, arguments);
+      setTimeout(tick, 200);
+      return r;
+    };
+  }
+})();
+
 pages.bankaHareketleri = function() {
   var v = state._view || {};
   if (v.mode === 'pickBank') return bankaPickBank();
@@ -14374,13 +15119,16 @@ pages.hesaplar = function() {
     list.filter(function(h){return (h.tip||'Kasa')===tip;}).forEach(function(h){ s += Number(h.bakiye)||0; cur = h.paraBirimi||cur; });
     return fmtMoney(s) + ' ' + cur;
   }
-  return '<div class="toolbar"><div class="dd" id="ddYeniHesap">' +
-    '<button class="btn btn-lime" onclick="toggleDd(\'ddYeniHesap\')">+ Yeni Hesap Ekle ▾</button>' + ymExportBar('hesaplar') + '' +
+  return '<div class="toolbar" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><div class="dd" id="ddYeniHesap">' +
+    '<button class="btn btn-lime" onclick="toggleDd(\'ddYeniHesap\')">+ Yeni Hesap Ekle ▾</button>' +
     '<div class="dd-menu">' +
     ['Kasa','Banka','POS','Ortaklar','Veresiye','Kredi Kartı'].map(function(t){
       return '<button type="button" onclick="state._view={form:true,tip:\'' + t + '\'};go(\'hesaplar\')">' + t + ' Ekle</button>';
     }).join('') +
-    '</div></div></div>' +
+    '</div></div>' +
+    '<button type="button" class="btn" style="background:#3b82f6;color:#fff;border:0;font-weight:700;padding:8px 14px;border-radius:8px;box-shadow:0 1px 2px rgba(37,99,235,.3)" onclick="state._view={mode:\'pickBank\',draft:{}};go(\'bankaHareketleri\')">+ Banka Hareketlerini Kaydet</button>' +
+    ymExportBar('hesaplar') +
+    '</div>' +
     '<div class="sec-grid">' +
     '<div class="sec"><div class="sec-h" style="background:#3b82c4;">KASA TANIMLARI <span style="float:right;">' + sumTip('Kasa') + '</span></div><div class="sec-b" style="background:#fffbeb;">' + cards('Kasa') + '</div></div>' +
     '<div class="sec"><div class="sec-h" style="background:#3b82c4;">BANKA HESAPLARI <span style="float:right;">' + sumTip('Banka') + '</span></div><div class="sec-b" style="background:#fffbeb;">' + cards('Banka') + '</div></div>' +
@@ -14392,25 +15140,59 @@ pages.hesaplar = function() {
 };
 function hesapForm() {
   var tip = state._view.tip || 'Kasa';
-  setTimeout(function(){ try { var c=document.getElementById('content'); if(c) c.scrollTop=0; window.scrollTo(0,0); var a=document.getElementById('h_ad'); if(a) a.focus(); } catch(e){} }, 30);
-  return '<div class="toolbar"><button type="button" class="btn btn-ghost" onclick="state._view={};go(\'hesaplar\')">Geri</button></div>' +
-    '<div class="card" style="max-width:480px;margin:12px auto 40px;position:relative;z-index:2;"><div class="card-h" style="background:#2dd4bf;color:#fff;"><h3 style="margin:0;color:#fff;">Yeni ' + esc(tip) + ' Hesabı</h3></div><div class="card-b">' +
-    '<div class="field"><label>Tanım</label><input class="input" id="h_ad"></div>' +
+  var editId = state._view.edit || null;
+  var h = editId ? ((dbGet('hesaplar')||[]).find(function(x){ return x.id === editId; }) || {}) : {};
+  var isEdit = !!editId && h.id;
+  setTimeout(function(){
+    try {
+      var c=document.getElementById('content'); if(c) c.scrollTop=0; window.scrollTo(0,0);
+      var a=document.getElementById('h_ad'); if(a) a.focus();
+      if (isEdit) {
+        var pb = document.getElementById('h_pb');
+        if (pb && h.paraBirimi) pb.value = h.paraBirimi;
+      }
+    } catch(e){}
+  }, 30);
+  return '<div class="toolbar"><button type="button" class="btn btn-ghost" onclick="state._view=' + (isEdit ? '{detail:\'' + editId + '\'}' : '{}') + ';go(\'hesaplar\')">Geri</button></div>' +
+    '<div class="card" style="max-width:480px;margin:12px auto 40px;position:relative;z-index:2;"><div class="card-h" style="background:#2dd4bf;color:#0f172a;"><h3 style="margin:0;">' + (isEdit ? 'Hesap Güncelleme' : ('Yeni ' + esc(tip) + ' Hesabı')) + '</h3></div><div class="card-b">' +
+    '<div class="field"><label>Hesap Adı / Tanım</label><input class="input" id="h_ad" value="' + esc(h.ad || '') + '"></div>' +
     '<div class="field"><label>Para Birimi</label><select class="input" id="h_pb"><option>TL</option><option>USD</option><option>EUR</option></select></div>' +
-    '<div class="field"><label>Hesap No</label><input class="input" id="h_no" placeholder="isteğe bağlı"></div>' +
-    '<div class="field"><label>Güncel Bakiye</label><input class="input" id="h_bakiye" type="number" step="0.01" value="0"></div>' +
-    '<div style="text-align:right;margin-top:12px;"><button class="btn btn-lime" onclick="saveHesap(\'' + tip + '\')">Kaydet</button> ' +
-    '<button class="btn btn-ghost" onclick="state._view={};go(\'hesaplar\')">İptal</button></div></div></div>';
+    '<div class="field"><label>Hesap No</label><input class="input" id="h_no" placeholder="isteğe bağlı" value="' + esc(h.hesapNo || h.hesapKodu || '') + '"></div>' +
+    '<div class="field"><label>Güncel Bakiye</label><input class="input" id="h_bakiye" type="number" step="0.01" value="' + (h.bakiye != null ? h.bakiye : 0) + '"></div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-top:16px">' +
+    (isEdit ? '<button type="button" class="btn" style="background:#ef4444;color:#fff;border:0;font-weight:700" onclick="hesapSil(\'' + editId + '\')">Hesabı Sil</button>' : '<span></span>') +
+    '<div style="display:flex;gap:8px">' +
+    '<button class="btn btn-ghost" onclick="state._view=' + (isEdit ? '{detail:\'' + editId + '\'}' : '{}') + ';go(\'hesaplar\')">İptal</button>' +
+    '<button class="btn btn-lime" onclick="saveHesap(\'' + esc(tip) + '\'' + (isEdit ? ',\'' + editId + '\'' : '') + ')">Kaydet</button>' +
+    '</div></div></div></div>';
 }
-window.saveHesap = function(tip) {
+window.saveHesap = function(tip, editId) {
   var ad = (document.getElementById('h_ad').value||'').trim();
   if (!ad) return toast('Tanım girin');
-  var list = dbGet('hesaplar');
+  var list = dbGet('hesaplar') || [];
+  var pb = (document.getElementById('h_pb')||{}).value || 'TL';
+  var no = (document.getElementById('h_no')||{}).value || '';
+  var bak = Number((document.getElementById('h_bakiye')||{}).value)||0;
+  if (editId) {
+    var found = false;
+    list = list.map(function(x){
+      if (x.id !== editId) return x;
+      found = true;
+      return Object.assign({}, x, { ad: ad, tip: tip || x.tip, paraBirimi: pb, hesapNo: no, bakiye: bak, updated: new Date().toISOString() });
+    });
+    if (!found) return toast('Hesap bulunamadı');
+    dbSet('hesaplar', list);
+    pushAct('Hesap güncellendi: ' + ad);
+    state._view = { detail: editId };
+    go('hesaplar');
+    toast('Hesap güncellendi');
+    return;
+  }
   list.push({
     id: uid('h'), ad: ad, tip: tip,
-    paraBirimi: document.getElementById('h_pb').value,
-    hesapNo: document.getElementById('h_no').value,
-    bakiye: Number(document.getElementById('h_bakiye').value)||0,
+    paraBirimi: pb,
+    hesapNo: no,
+    bakiye: bak,
     created: new Date().toISOString()
   });
   dbSet('hesaplar', list);
@@ -14418,6 +15200,34 @@ window.saveHesap = function(tip) {
   state._view = {};
   go('hesaplar');
   toast('Hesap kaydedildi');
+};
+window.hesapSil = function(id) {
+  var h = (dbGet('hesaplar')||[]).find(function(x){ return x.id === id; });
+  if (!h) return toast('Hesap yok');
+  // bankadan bağlıysa engelleme yok; sil
+  ymConfirm('"' + (h.ad||'Hesap') + '" silinecek. Bu hesaba ait hareketler de silinsin mi?\n\nBu işlem geri alınamaz.', { title: 'Hesabı Sil', okText: 'Sil', cancelText: 'Vazgeç', danger: true }).then(function(ok){
+    if (!ok) return;
+    var list = (dbGet('hesaplar')||[]).filter(function(x){ return x.id !== id; });
+    dbSet('hesaplar', list);
+    try {
+      var har = (dbGet('hesapHareket')||[]).filter(function(x){ return x.hesapId !== id; });
+      dbSet('hesapHareket', har);
+    } catch(e) {}
+    // bağlı banka hesabı linkini temizle
+    try {
+      if (h.bankaHesapId && typeof ymBankaHesaplar === 'function') {
+        var bl = ymBankaHesaplar().map(function(b){
+          if (b.hesapLinkId === id) { var n = Object.assign({}, b); delete n.hesapLinkId; return n; }
+          return b;
+        });
+        dbSet('bankaHesaplari', bl);
+      }
+    } catch(e) {}
+    pushAct('Hesap silindi: ' + (h.ad||''));
+    state._view = {};
+    go('hesaplar');
+    toast('Hesap silindi');
+  });
 };
 function hesapDetail(id) {
   var h = dbGet('hesaplar').find(function(x){return x.id===id;});
