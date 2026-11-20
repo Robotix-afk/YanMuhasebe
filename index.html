@@ -5849,6 +5849,53 @@ window.ymConfirm = function(message, optsOrCb, maybeCb) {
   return p;
 };
 
+
+window.ymPrompt = function(message, opts) {
+  opts = opts || {};
+  return new Promise(function(resolve) {
+    window.__ymPromptResolve = function(v) {
+      window.__ymPromptResolve = null;
+      resolve(v);
+    };
+    var inputType = opts.type || 'text';
+    var ph = opts.placeholder || '';
+    var val = opts.value != null ? String(opts.value) : '';
+    var body = '<div class="ym-confirm-msg">' + esc(String(message || '')).replace(/\n/g, '<br>') + '</div>' +
+      '<input class="input" id="ymPromptInput" type="' + inputType + '" step="' + (opts.step || 'any') + '" placeholder="' + esc(ph) + '" value="' + esc(val) + '" style="width:100%;margin-top:10px;font-size:15px;padding:12px" ' +
+      'onkeydown="if(event.key===\'Enter\'){event.preventDefault();var v=(document.getElementById(\'ymPromptInput\')||{}).value;closeModal();if(window.__ymPromptResolve)window.__ymPromptResolve(v);}">';
+    var footer =
+      '<button type="button" class="btn btn-ghost" onclick="closeModal();if(window.__ymPromptResolve)window.__ymPromptResolve(null)">Vazgeç</button>' +
+      '<button type="button" class="btn btn-lime" onclick="var v=(document.getElementById(\'ymPromptInput\')||{}).value;closeModal();if(window.__ymPromptResolve)window.__ymPromptResolve(v)">' + (opts.okText || 'Tamam') + '</button>';
+    openModal(opts.title || 'YanMuhasebe', body, footer);
+    setTimeout(function(){
+      var e = document.getElementById('ymPromptInput');
+      if (e) { e.focus(); try { e.select(); } catch(err) {} }
+    }, 60);
+  });
+};
+window.ymSelectPrompt = function(message, options, opts) {
+  opts = opts || {};
+  options = options || [];
+  return new Promise(function(resolve) {
+    window.__ymPromptResolve = function(v) {
+      window.__ymPromptResolve = null;
+      resolve(v);
+    };
+    var optsHtml = options.map(function(o, i){
+      return '<option value="' + i + '">' + esc(o.label || o.ad || String(o)) + '</option>';
+    }).join('');
+    var body = '<div class="ym-confirm-msg">' + esc(String(message || '')).replace(/\n/g, '<br>') + '</div>' +
+      '<select class="input" id="ymPromptSelect" style="width:100%;margin-top:10px;font-size:14px;padding:10px">' + optsHtml + '</select>';
+    if (opts.askAmount) {
+      body += '<div class="field" style="margin-top:12px"><label>Tutar</label><input class="input" id="ymPromptInput" type="number" step="0.01" placeholder="0.00" style="width:100%;font-size:15px;padding:12px"></div>';
+    }
+    var footer =
+      '<button type="button" class="btn btn-ghost" onclick="closeModal();if(window.__ymPromptResolve)window.__ymPromptResolve(null)">Vazgeç</button>' +
+      '<button type="button" class="btn btn-lime" onclick="var s=document.getElementById(\'ymPromptSelect\');var idx=s?Number(s.value):-1;var amtEl=document.getElementById(\'ymPromptInput\');var amt=amtEl?amtEl.value:null;closeModal();if(window.__ymPromptResolve)window.__ymPromptResolve({index:idx,amount:amt})">' + (opts.okText || 'Tamam') + '</button>';
+    openModal(opts.title || 'YanMuhasebe', body, footer);
+  });
+};
+
 window.ymAlert = function(message, title) {
   return new Promise(function(resolve) {
     var ttl = String(title || 'Bilgi');
@@ -12898,8 +12945,8 @@ window.sfPaylas = function(id) {
     }))));
     var url = (location.origin||'') + (window.YM_BASE||'/') + 'index.html#fbdata=' + payload;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function(){ toast('Paylaşım linki kopyalandı'); }).catch(function(){ prompt('Linki kopyalayın:', url); });
-    } else prompt('Linki kopyalayın:', url);
+      navigator.clipboard.writeText(url).then(function(){ toast('Paylaşım linki kopyalandı'); }).catch(function(){ ymPrompt('Linki kopyalayın veya kopyala butonunu kullanın', { title:'Davet Linki', value: url, okText:'Tamam' }); });
+    } else ymPrompt('Linki kopyalayın veya kopyala butonunu kullanın', { title:'Davet Linki', value: url, okText:'Tamam' });
   } catch(e) { toast('Link oluşturulamadı'); }
 };
 window.sfKopya = function(id) {
@@ -15111,13 +15158,18 @@ pages.hesaplar = function() {
     return list.filter(function(h){ return (h.tip||'Kasa') === tip && !h.pasif; }).map(function(h){
       var stil = h.etiketRenk ? ('border-left:4px solid ' + h.etiketRenk + ';') : '';
       return '<button type="button" class="hesap-chip" style="' + stil + '" onclick="state._view={detail:\'' + h.id + '\'};go(\'hesaplar\')">' +
-        '<strong>' + esc(h.ad) + '</strong><span>' + esc(h.paraBirimi||'TL') + ' ' + fmtMoney(h.bakiye) + '</span></button>';
+        '<strong>' + esc(h.ad) + '</strong><span>' + fmtMoney(h.bakiye, h.paraBirimi||'TL') + '</span></button>';
     }).join('') || '<span style="color:#94a3b8;font-size:13px;padding:8px;">Hesap yok</span>';
   }
   function sumTip(tip) {
-    var s = 0, cur = 'TL';
-    list.filter(function(h){return (h.tip||'Kasa')===tip;}).forEach(function(h){ s += Number(h.bakiye)||0; cur = h.paraBirimi||cur; });
-    return fmtMoney(s) + ' ' + cur;
+    var byCur = {};
+    list.filter(function(h){return (h.tip||'Kasa')===tip && !h.pasif;}).forEach(function(h){
+      var c = (h.paraBirimi||'TL').toUpperCase().replace('TRY','TL');
+      byCur[c] = (byCur[c]||0) + (Number(h.bakiye)||0);
+    });
+    var keys = Object.keys(byCur);
+    if (!keys.length) return fmtMoney(0, 'TL');
+    return keys.map(function(c){ return fmtMoney(byCur[c], c); }).join(' · ');
   }
   return '<div class="toolbar" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><div class="dd" id="ddYeniHesap">' +
     '<button class="btn btn-lime" onclick="toggleDd(\'ddYeniHesap\')">+ Yeni Hesap Ekle ▾</button>' +
@@ -15233,12 +15285,13 @@ function hesapDetail(id) {
   var h = dbGet('hesaplar').find(function(x){return x.id===id;});
   if (!h) { state._view={}; return pages.hesaplar(); }
   var hareket = (dbGet('hesapHareket')||[]).filter(function(x){return x.hesapId===id;}).slice().reverse();
+  var cur = h.paraBirimi || 'TL';
   var rows = hareket.map(function(x){
     return [fmtDate(x.tarih), esc(x.islem), esc(x.kullanici||''), esc(x.karsi||''), esc(x.aciklama||''),
-      x.borc?fmtMoney(x.borc):'', x.alacak?fmtMoney(x.alacak):'', fmtMoney(x.bakiye||0)];
+      x.borc?fmtMoney(x.borc, cur):'', x.alacak?fmtMoney(x.alacak, cur):'', fmtMoney(x.bakiye||0, cur)];
   });
   return '<div class="toolbar"><button class="btn btn-ghost" onclick="state._view={};go(\'hesaplar\')">Geri</button></div>' +
-    '<div class="stat-card s1" style="margin-bottom:14px;max-width:320px;"><div><div class="val">' + esc(h.ad) + '</div><div class="lbl">Bakiye: ' + fmtMoney(h.bakiye) + ' ' + esc(h.paraBirimi||'TL') + '</div></div></div>' +
+    '<div class="stat-card s1" style="margin-bottom:14px;max-width:320px;"><div><div class="val">' + esc(h.ad) + '</div><div class="lbl">Bakiye: ' + fmtMoney(h.bakiye, h.paraBirimi||'TL') + '</div></div></div>' +
     '<div class="toolbar">' +
     '<button class="btn btn-sky btn-sm" onclick="state._view={form:true,edit:\'' + id + '\',tip:\'' + esc(h.tip||'Kasa') + '\'};go(\'hesaplar\')">Güncelle</button> ' +
     '<button class="btn btn-teal btn-sm" onclick="hesapPara(\'' + id + '\',\'giris\')">Hesaba Para Girişi Yap</button> ' +
@@ -15250,45 +15303,72 @@ function hesapDetail(id) {
     tableHTML(['Tarih','İşlem','Kullanıcı','Hesap','Açıklama','Borç','Alacak','Bakiye'], rows) + '</div></div>';
 }
 window.hesapPara = function(id, tip) {
-  var tutar = prompt(tip==='giris' ? 'Giriş tutarı:' : 'Çıkış tutarı:');
-  if (tutar==null) return;
-  tutar = Number(tutar)||0;
-  if (!tutar) return toast('Tutar girin');
-  var list = dbGet('hesaplar');
-  var h = list.find(function(x){return x.id===id;});
-  if (!h) return;
-  if (tip==='giris') h.bakiye = (Number(h.bakiye)||0) + tutar;
-  else h.bakiye = (Number(h.bakiye)||0) - tutar;
-  dbSet('hesaplar', list);
-  var har = dbGet('hesapHareket')||[];
-  har.push({ id:uid('hh'), hesapId:id, tarih:todayISO(), islem: tip==='giris'?'Giriş':'Çıkış',
-    kullanici:(state.user||{}).name||'', aciklama: tip==='giris'?'Para girişi':'Para çıkışı',
-    borc: tip==='cikis'?tutar:0, alacak: tip==='giris'?tutar:0, bakiye:h.bakiye });
-  dbSet('hesapHareket', har);
-  pushAct(h.ad + ' ' + (tip==='giris'?'giriş':'çıkış') + ': ' + fmtMoney(tutar));
-  state._view = { detail: id };
-  go('hesaplar');
+  var list = dbGet('hesaplar')||[];
+  var h0 = list.find(function(x){return x.id===id;});
+  if (!h0) return toast('Hesap bulunamadı');
+  var cur = h0.paraBirimi || 'TL';
+  var title = tip==='giris' ? 'Hesaba Para Girişi' : 'Hesaptan Para Çıkışı';
+  ymPrompt((tip==='giris' ? 'Giriş tutarını girin' : 'Çıkış tutarını girin') + ' (' + cur + ')', {
+    title: title + ' — ' + (h0.ad||''),
+    type: 'number',
+    step: '0.01',
+    placeholder: '0.00',
+    okText: tip==='giris' ? 'Giriş Yap' : 'Çıkış Yap'
+  }).then(function(tutar){
+    if (tutar==null) return;
+    tutar = Number(String(tutar).replace(',','.'))||0;
+    if (!tutar) return toast('Tutar girin');
+    var list = dbGet('hesaplar')||[];
+    var h = list.find(function(x){return x.id===id;});
+    if (!h) return;
+    if (tip==='giris') h.bakiye = (Number(h.bakiye)||0) + tutar;
+    else h.bakiye = (Number(h.bakiye)||0) - tutar;
+    dbSet('hesaplar', list);
+    var har = dbGet('hesapHareket')||[];
+    har.push({ id:uid('hh'), hesapId:id, tarih:todayISO(), islem: tip==='giris'?'Giriş':'Çıkış',
+      kullanici:(state.user||{}).name||'', aciklama: tip==='giris'?'Para girişi':'Para çıkışı',
+      borc: tip==='cikis'?tutar:0, alacak: tip==='giris'?tutar:0, bakiye:h.bakiye });
+    dbSet('hesapHareket', har);
+    pushAct(h.ad + ' ' + (tip==='giris'?'giriş':'çıkış') + ': ' + fmtMoney(tutar, cur));
+    state._view = { detail: id };
+    go('hesaplar');
+    toast((tip==='giris'?'Giriş':'Çıkış') + ' kaydedildi');
+  });
 };
 window.hesapTransfer = function(id, dir) {
-  var list = dbGet('hesaplar').filter(function(x){return x.id!==id;});
+  var list = (dbGet('hesaplar')||[]).filter(function(x){return x.id!==id && !x.pasif;});
   if (!list.length) return toast('Başka hesap yok');
-  var names = list.map(function(h,i){ return (i+1)+') '+h.ad; }).join('\\n');
-  var sec = prompt('Hedef hesap no:\\n' + names);
-  if (!sec) return;
-  var hedef = list[Number(sec)-1];
-  if (!hedef) return toast('Geçersiz');
-  var tutar = Number(prompt('Tutar:'))||0;
-  if (!tutar) return;
-  var all = dbGet('hesaplar');
-  var src = all.find(function(x){return x.id===(dir==='out'?id:hedef.id);});
-  var dst = all.find(function(x){return x.id===(dir==='out'?hedef.id:id);});
-  if (!src||!dst) return;
-  src.bakiye = (Number(src.bakiye)||0) - tutar;
-  dst.bakiye = (Number(dst.bakiye)||0) + tutar;
-  dbSet('hesaplar', all);
-  pushAct('Transfer: ' + fmtMoney(tutar));
-  state._view = { detail: id };
-  go('hesaplar');
+  var options = list.map(function(h){
+    return { id: h.id, label: (h.ad||'Hesap') + ' (' + fmtMoney(h.bakiye, h.paraBirimi||'TL') + ')', ad: h.ad };
+  });
+  ymSelectPrompt(dir==='out' ? 'Hedef hesap seçin (bu hesaptan çıkış)' : 'Kaynak hesap seçin (bu hesaba giriş)', options, {
+    title: 'Hesaplar Arası Transfer',
+    askAmount: true,
+    okText: 'Transfer Et'
+  }).then(function(res){
+    if (!res || res.index < 0) return;
+    var hedef = list[res.index];
+    if (!hedef) return toast('Geçersiz hesap');
+    var tutar = Number(String(res.amount||'').replace(',','.'))||0;
+    if (!tutar) return toast('Tutar girin');
+    var all = dbGet('hesaplar')||[];
+    var src = all.find(function(x){return x.id===(dir==='out'?id:hedef.id);});
+    var dst = all.find(function(x){return x.id===(dir==='out'?hedef.id:id);});
+    if (!src||!dst) return;
+    src.bakiye = (Number(src.bakiye)||0) - tutar;
+    dst.bakiye = (Number(dst.bakiye)||0) + tutar;
+    dbSet('hesaplar', all);
+    var har = dbGet('hesapHareket')||[];
+    var now = todayISO();
+    var user = (state.user||{}).name||'';
+    har.push({ id:uid('hh'), hesapId:src.id, tarih:now, islem:'Transfer Çıkış', kullanici:user, karsi:dst.ad, aciklama:'Transfer → '+dst.ad, borc:tutar, alacak:0, bakiye:src.bakiye });
+    har.push({ id:uid('hh'), hesapId:dst.id, tarih:now, islem:'Transfer Giriş', kullanici:user, karsi:src.ad, aciklama:'Transfer ← '+src.ad, borc:0, alacak:tutar, bakiye:dst.bakiye });
+    dbSet('hesapHareket', har);
+    pushAct('Transfer: ' + src.ad + ' → ' + dst.ad + ' ' + fmtMoney(tutar, src.paraBirimi||'TL'));
+    state._view = { detail: id };
+    go('hesaplar');
+    toast('Transfer kaydedildi');
+  });
 };
 
 pages.calisanlar = function() {
