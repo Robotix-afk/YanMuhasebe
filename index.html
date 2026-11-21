@@ -2,6 +2,8 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>YanMuhasebe</title>
 <script>
@@ -1819,7 +1821,7 @@ body:not(.app-open) #aiRoot { display:none !important; }
 .top-bell-panel .tbp-h{padding:12px 14px;font-weight:800;font-size:14px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center}
 .top-bell-panel .tbp-item{padding:12px 14px;border-bottom:1px solid #f8fafc;cursor:pointer;transition:background .12s}
 .top-bell-panel .tbp-item:hover{background:#f8fafc}
-.top-bell-panel .tbp-item.unread{background:#fefce8}
+.top-bell-panel .tbp-item.unread{background:#fefce8}.tbp-item:not(.unread){opacity:.72}
 .top-bell-panel .tbp-item .t{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px}
 .top-bell-panel .tbp-item .m{font-size:12px;color:#64748b;line-height:1.4}
 .top-bell-panel .tbp-item .d{font-size:11px;color:#94a3b8;margin-top:4px}
@@ -3653,37 +3655,27 @@ tr.cari-pasif:hover td{background:#c4c8cf!important}
         <div id="ymFcSearchResults" style="display:none;margin-bottom:12px"></div>
         <div class="ym-fc-grid">
           <button type="button" class="ym-fc-card" onclick="ymFcShow('bildirim')">
-            <div class="ic" style="background:#fef3c7">🔔</div>
+            <div class="ic" style="background:#fef3c7"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"/><path d="M9.5 17a2.5 2.5 0 0 0 5 0"/></svg></div>
             <div class="t">Bildirim Merkezi</div>
             <div class="d">Vade, hatırlatma, uyarılar</div>
           </button>
           <button type="button" class="ym-fc-card" onclick="ymFcShow('takvim')">
-            <div class="ic" style="background:#dbeafe">📅</div>
+            <div class="ic" style="background:#dbeafe"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
             <div class="t">Finans Takvimi</div>
             <div class="d">Vade ve notlar</div>
           </button>
           <button type="button" class="ym-fc-card" onclick="ymFcToggleDark()">
-            <div class="ic" style="background:#e2e8f0">🌙</div>
+            <div class="ic" style="background:#e2e8f0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg></div>
             <div class="t">Koyu Tema</div>
             <div class="d" id="ymFcDarkLabel">Açık / koyu geçiş</div>
           </button>
-          <button type="button" class="ym-fc-card" onclick="ymFcShow('yedek')">
-            <div class="ic" style="background:#dcfce7">💾</div>
-            <div class="t">Veri Yedekleme</div>
-            <div class="d">JSON indir / yükle</div>
-          </button>
-          <button type="button" class="ym-fc-card" onclick="ymFcShow('etiket')">
-            <div class="ic" style="background:#fce7f3">🏷️</div>
-            <div class="t">Müşteri Etiketleri</div>
-            <div class="d">Etiket tanımla ve uygula</div>
-          </button>
           <button type="button" class="ym-fc-card" onclick="ymFcShow('karsilastir')">
-            <div class="ic" style="background:#ede9fe">📊</div>
+            <div class="ic" style="background:#ede9fe"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19V8"/></svg></div>
             <div class="t">Aylık Karşılaştırma</div>
             <div class="d">Bu ay vs geçen ay</div>
           </button>
           <button type="button" class="ym-fc-card" onclick="ymFcShow('hizli')" style="grid-column:1/-1">
-            <div class="ic" style="background:#ffedd5">⚡</div>
+            <div class="ic" style="background:#ffedd5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 10-14h-7l1-6z"/></svg></div>
             <div class="t">Hızlı İşlemler</div>
             <div class="d">Satış, alış, cari, masraf kısayolları</div>
           </button>
@@ -3691,9 +3683,7 @@ tr.cari-pasif:hover td{background:#c4c8cf!important}
       </div>
       <div id="ymFcSec_bildirim" class="ym-fc-section"></div>
       <div id="ymFcSec_takvim" class="ym-fc-section"></div>
-      <div id="ymFcSec_yedek" class="ym-fc-section"></div>
-      <div id="ymFcSec_etiket" class="ym-fc-section"></div>
-      <div id="ymFcSec_karsilastir" class="ym-fc-section"></div>
+                  <div id="ymFcSec_karsilastir" class="ym-fc-section"></div>
       <div id="ymFcSec_hizli" class="ym-fc-section"></div>
     </div>
   </div>
@@ -4502,7 +4492,26 @@ function cloudSyncAfterLogin(user) {
 
 
 function esc(s) {
-  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+/** onclick / attribute içi id-güvenli kaçış */
+function escAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/\\/g, '\\\\')
+    .replace(/\n/g, ' ')
+    .replace(/\r/g, '');
+}
+function safeId(s) {
+  return String(s == null ? '' : s).replace(/[^a-zA-Z0-9_\-]/g, '');
 }
 function getDefaultCurrency() {
   try {
@@ -4516,8 +4525,41 @@ var CUR_META = {
   TL:  { s: '₺', code: 'TRY', tr: 'TL' },
   USD: { s: '$', code: 'USD', tr: 'USD' },
   EUR: { s: '€', code: 'EUR', tr: 'EUR' },
-  GBP: { s: '£', code: 'GBP', tr: 'GBP' }
+  GBP: { s: '£', code: 'GBP', tr: 'GBP' },
+  CHF: { s: 'Fr', code: 'CHF', tr: 'CHF' },
+  AZN: { s: '₼', code: 'AZN', tr: 'AZN' },
+  MKD: { s: 'ден', code: 'MKD', tr: 'MKD' },
+  TMT: { s: 'm', code: 'TMT', tr: 'TMT' },
+  GEL: { s: '₾', code: 'GEL', tr: 'GEL' },
+  RUB: { s: '₽', code: 'RUB', tr: 'RUB' },
+  BGN: { s: 'лв', code: 'BGN', tr: 'BGN' },
+  CAD: { s: 'C$', code: 'CAD', tr: 'CAD' },
+  AUD: { s: 'A$', code: 'AUD', tr: 'AUD' },
+  IRR: { s: '﷼', code: 'IRR', tr: 'IRR' },
+  IQD: { s: 'ع.د', code: 'IQD', tr: 'IQD' },
+  SAR: { s: '﷼', code: 'SAR', tr: 'SAR' },
+  AED: { s: 'د.إ', code: 'AED', tr: 'AED' },
+  MRO: { s: 'UM', code: 'MRO', tr: 'MRO' },
+  CNY: { s: '¥', code: 'CNY', tr: 'CNY' },
+  LEI: { s: 'lei', code: 'LEI', tr: 'LEI' },
+  RON: { s: 'lei', code: 'RON', tr: 'LEI' },
+  JPY: { s: '¥', code: 'JPY', tr: 'JPY' },
+  SEK: { s: 'kr', code: 'SEK', tr: 'SEK' },
+  NOK: { s: 'kr', code: 'NOK', tr: 'NOK' },
+  DKK: { s: 'kr', code: 'DKK', tr: 'DKK' },
+  PLN: { s: 'zł', code: 'PLN', tr: 'PLN' },
+  INR: { s: '₹', code: 'INR', tr: 'INR' },
+  KRW: { s: '₩', code: 'KRW', tr: 'KRW' }
 };
+/* Tek kaynak para birimi listesi */
+var YM_PARA_BIRIMLERI = ['TL','USD','EUR','GBP','CHF','AZN','MKD','TMT','GEL','RUB','BGN','CAD','AUD','IRR','IQD','SAR','AED','MRO','CNY','LEI','JPY','SEK','NOK','DKK','PLN','INR','KRW'];
+function ymParaOptions(selected) {
+  selected = String(selected || 'TL').toUpperCase().replace('TRY','TL').replace('RON','LEI');
+  return YM_PARA_BIRIMLERI.map(function(c){
+    return '<option value="' + c + '"' + (c === selected ? ' selected' : '') + '>' + c + '</option>';
+  }).join('');
+}
+
 function curMeta(c) {
   c = (c || getDefaultCurrency() || 'TRY').toUpperCase();
   return CUR_META[c] || { s: c + ' ', code: c, tr: c };
@@ -4533,6 +4575,84 @@ function fmtBarkod(b) {
   }
   return s;
 }
+
+/* Vade: sabit yoksa belge tarihinden; gün farkı timezone-safe */
+
+function ymBarkodFormat(code) {
+  var s = String(code || '').trim();
+  if (/^\d{13}$/.test(s)) return 'EAN13';
+  if (/^\d{8}$/.test(s)) return 'EAN8';
+  if (/^\d{12}$/.test(s)) return 'EAN13'; // UPCA-ish, JsBarcode may need pad
+  return 'CODE128';
+}
+function ymDrawBarcode(el, code, opts) {
+  if (!el || !code || typeof JsBarcode === 'undefined') return;
+  opts = opts || {};
+  var s = String(code).trim();
+  var fmt = ymBarkodFormat(s);
+  // 12 haneli sayıya EAN-13 için kontrol hanesi ekle
+  if (fmt === 'EAN13' && /^\d{12}$/.test(s)) {
+    try { s = s; fmt = 'EAN13'; } catch(e) {}
+  }
+  try {
+    JsBarcode(el, s, {
+      format: fmt,
+      width: opts.width != null ? opts.width : 1.6,
+      height: opts.height != null ? opts.height : 48,
+      displayValue: opts.displayValue !== false,
+      fontSize: opts.fontSize || 12,
+      margin: opts.margin != null ? opts.margin : 0,
+      textMargin: 2
+    });
+  } catch (e1) {
+    try {
+      JsBarcode(el, String(code).trim(), {
+        format: 'CODE128',
+        width: opts.width != null ? opts.width : 1.6,
+        height: opts.height != null ? opts.height : 48,
+        displayValue: opts.displayValue !== false,
+        fontSize: opts.fontSize || 12,
+        margin: opts.margin != null ? opts.margin : 0
+      });
+    } catch (e2) {}
+  }
+}
+
+function ymParseDateOnly(s) {
+  if (!s) return null;
+  var p = String(s).slice(0, 10).split('-');
+  if (p.length < 3) return null;
+  var y = parseInt(p[0], 10), m = parseInt(p[1], 10) - 1, d = parseInt(p[2], 10);
+  if (!y || m < 0 || !d) return null;
+  return new Date(y, m, d);
+}
+function ymTodayDateOnly() {
+  var n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+}
+function ymDayDiff(fromISO, toISO) {
+  var a = ymParseDateOnly(fromISO);
+  var b = toISO ? ymParseDateOnly(toISO) : ymTodayDateOnly();
+  if (!a || !b) return 0;
+  return Math.round((b - a) / 86400000);
+}
+/** Belge için efektif vade: kayıtlı vade > cari vadeGünü > belge tarihi */
+function ymEfektifVade(belge, cari) {
+  if (!belge) return null;
+  var v = belge.vade || belge.vadeTarih;
+  if (v && String(v).slice(0, 10)) return String(v).slice(0, 10);
+  var tarih = String(belge.tarih || belge.created || '').slice(0, 10);
+  if (!tarih) tarih = todayISO();
+  var gun = 0;
+  if (cari && cari.vadeGun != null && cari.vadeGun !== '') gun = parseInt(cari.vadeGun, 10) || 0;
+  else if (belge.vadeGun != null) gun = parseInt(belge.vadeGun, 10) || 0;
+  if (!gun) return tarih; // aynı gün vade → ertesi günden itibaren gecikme sayılır
+  var d = ymParseDateOnly(tarih);
+  if (!d) return tarih;
+  d.setDate(d.getDate() + gun);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
 function fmtMoney(n, currency) {
   n = Number(n) || 0;
   var m = curMeta(currency);
@@ -5270,6 +5390,16 @@ window.doLogin = function() {
   var id = (document.getElementById('loginId').value || '').trim().toLowerCase();
   var pass = (document.getElementById('loginPass').value || '').trim();
   if (!id || !pass) return authError('Bilgileri girin.');
+  // Basit deneme sınırı (istemci tarafı)
+  try {
+    var _lk = 'ym_login_try';
+    var _tr = JSON.parse(sessionStorage.getItem(_lk) || '{"n":0,"t":0}');
+    var _now = Date.now();
+    if (_now - (_tr.t||0) > 15*60*1000) _tr = {n:0,t:_now};
+    if (_tr.n >= 12) return authError('Çok fazla deneme. 15 dakika sonra tekrar deneyin.');
+    _tr.n++; _tr.t = _tr.t || _now;
+    sessionStorage.setItem(_lk, JSON.stringify(_tr));
+  } catch (e) {}
   if (!requireRecaptcha()) return;
   setAuthLoading(true, 'login');
 
@@ -5644,7 +5774,7 @@ function buildNav() {
   var el = document.getElementById('sidebarNav');
   if (el) el.innerHTML = html;
   try {
-    var openIds = { 'grp-nakit': 1 };
+    var openIds = {};
     if (state.page === 'gelenEfaturalar' || state.page === 'olusturulanEfaturalar' || state.page === 'arsivlenenFaturalar' || state.page === 'efaturaKayit' || state.page === 'fatura' || state.page === 'gelenFaturalar' || state.page === 'hesaplar' || state.page === 'bankaHareketleri' || state.page === 'masraflar' || state.page === 'kredi' || state.page === 'demirbaslar' || state.page === 'calisanlar') openIds['grp-nakit'] = 1;
     Object.keys(openIds).forEach(function(gid) {
       var btn = el && el.querySelector('[data-group="' + gid + '"]');
@@ -5655,9 +5785,24 @@ function buildNav() {
   } catch (e) {}
 }
 window.toggleGroup = function(btn) {
-  btn.classList.toggle('open');
-  var sub = document.getElementById('sub-' + btn.getAttribute('data-group'));
-  if (sub) sub.classList.toggle('open');
+  var gid = btn.getAttribute('data-group');
+  var willOpen = !btn.classList.contains('open');
+  // Diğer açık grupları kapat (akordeon)
+  document.querySelectorAll('.nav-group-btn.open').forEach(function(b) {
+    if (b === btn) return;
+    b.classList.remove('open');
+    var s = document.getElementById('sub-' + b.getAttribute('data-group'));
+    if (s) s.classList.remove('open');
+  });
+  if (willOpen) {
+    btn.classList.add('open');
+    var sub = document.getElementById('sub-' + gid);
+    if (sub) sub.classList.add('open');
+  } else {
+    btn.classList.remove('open');
+    var sub2 = document.getElementById('sub-' + gid);
+    if (sub2) sub2.classList.remove('open');
+  }
 };
 window.toggleMobileMenu = function() {
   document.getElementById('sidebar').classList.toggle('mobile-open');
@@ -5691,6 +5836,9 @@ window.flipHomeStat = function(kind) {
 };
 
 function go(page) {
+  // Sayfa adını güvenli tut (XSS / prototype pollution)
+  page = String(page == null ? 'home' : page).replace(/[^a-zA-Z0-9_\-]/g, '');
+  if (!page) page = 'home';
   try {
     var c = document.getElementById('content');
     if (c) {
@@ -7007,16 +7155,18 @@ pages.home = function() {
     satislar = dbGet('satislar') || [];
   } catch (e) {}
   var gecenMap = {};
+  var todayOnly = (typeof todayISO === 'function' ? todayISO() : today);
   satislar.forEach(function(s) {
-    if (!s.vade) return;
     if (s.durum === 'iptal' || s.durum === 'odendi' || s.odendi) return;
-    if (s.belgeTipi === 'proforma' || s.durum === 'proforma' || s.durum === 'taslak') return;
-    var vade = String(s.vade).slice(0, 10);
-    if (!vade || vade >= today) return;
+    if (s.belgeTipi === 'proforma' || s.durum === 'proforma' || s.durum === 'taslak' || s.tip === 'proforma') return;
     var mid = String(s.musteriId || s.cariId || '');
     if (!mid || mid === 'perakende') return;
     var mchk = musById[mid];
-    if (mchk && (Number(mchk.bakiye) || 0) <= 0.009) return; // bakiyesi kapanmış cari
+    if (mchk && (Number(mchk.bakiye) || 0) <= 0.009) return;
+    var vade = (typeof ymEfektifVade === 'function') ? ymEfektifVade(s, mchk) : String(s.vade || s.tarih || '').slice(0, 10);
+    if (!vade) return;
+    // vade bugün veya ilerisiyse henüz gecikme yok
+    if (vade >= todayOnly) return;
     var tutar = Number(s.tutar) || Number(s.genelToplam) || 0;
     var tahsil = Number(s.tahsil) || 0;
     if (!tahsil && Array.isArray(s.odemeler)) {
@@ -7047,11 +7197,12 @@ pages.home = function() {
       return null;
     }
     if (g.kalan <= 0.009) return null;
-    g.gun = Math.max(1, Math.round((now - new Date(g.vade)) / 86400000));
+    // gecikme günü: vadeden bugüne (her gün artar)
+    g.gun = Math.max(1, typeof ymDayDiff === 'function' ? ymDayDiff(g.vade) : Math.round((now - new Date(g.vade + 'T12:00:00')) / 86400000));
     return g;
   }).filter(Boolean).sort(function(a, b) { return b.gun - a.gun || b.kalan - a.kalan; });
   var gecenHtml = gecen.length ? gecen.slice(0, 4).map(function(g) {
-    return '<div class="hm-item"><span class="hm-nm">' + esc(g.ad) + '</span><span>' + fmtMoney(g.kalan) + '</span><small>' + g.gun + ' gün</small></div>';
+    return '<div class="hm-item"><span class="hm-nm">' + esc(g.ad) + '</span><span>' + fmtMoney(g.kalan) + '</span><small>' + g.gun + ' gün geçti</small></div>';
   }).join('') : '<p class="hm-empty">Vadesi geçmiş alacağınız bulunmuyor.</p>';
 
   /* Banner — 26/11/2031'e kadar ücretsiz */
@@ -7448,8 +7599,34 @@ pages.tedarikciler = function() {
   if (filtre === 'pasif') list = list.filter(function(m){ return m.aktif === false || m.pasif; });
   var rows = list.map(function(m) {
     var bal = Number(m.bakiye)||0;
-    var balTxt = bal < 0 ? '<span style="color:var(--green)">Alacaklı ' + fmtMoney(Math.abs(bal)) + '</span>'
-      : bal > 0 ? '<span style="color:var(--red)">Borçlu ' + fmtMoney(bal) + '</span>'
+    // Açık alışlardan kalan gerçek borç
+    try {
+      var kalanAlis = 0;
+      (dbGet('alislar')||[]).forEach(function(a){
+        if (String(a.tedarikciId)!==String(m.id)) return;
+        if (a.durum==='iptal' || a.durum==='taslak' || a.durum==='siparis' || a.tip==='siparis' || a.tip==='proforma') return;
+        if (a.odendi || a.durum==='odendi') return;
+        var top = Number(a.tutar)||0;
+        var od = Number(a.odenen)||Number(a.tahsil)||0;
+        if (!od && Array.isArray(a.odemeler)) a.odemeler.forEach(function(o){ od += Number(o.tutar)||0; });
+        kalanAlis += Math.max(0, top - od);
+      });
+      // Kayıtlı bakiye ile açık alış tutarsızsa açık alışa güven (ödenmişse 0)
+      if (kalanAlis < 0.02 && Math.abs(bal) > 0.02) {
+        bal = 0;
+        // kalıcı düzelt
+        m.bakiye = 0;
+        var _tl = dbGet('tedarikciler')||[];
+        var _tx = _tl.find(function(x){return x.id===m.id;});
+        if (_tx) { _tx.bakiye = 0; dbSet('tedarikciler', _tl); }
+      } else if (kalanAlis >= 0.02) {
+        // gösterim: borç miktarı
+        bal = -kalanAlis;
+      }
+    } catch(e){}
+    if (Math.abs(bal) < 0.02) bal = 0;
+    var balTxt = bal < 0 ? '<span style="color:var(--red)">Borç ' + fmtMoney(Math.abs(bal)) + '</span>'
+      : bal > 0 ? '<span style="color:var(--green)">Alacak ' + fmtMoney(bal) + '</span>'
       : fmtMoney(0);
     var id = String(m.id || '').replace(/'/g, '');
     var __r = [
@@ -7797,7 +7974,7 @@ function cariForm(type) {
     '<div class="cari-tab-pane" id="ctab-cari">' +
     '<div class="form-grid">' +
     '<div><label>Vergi Dairesi</label><input id="c_vd" value="'+esc(m.vergiDairesi||'')+'"></div>' +
-    '<div><label>Müşteri Para Birimi</label><select id="c_pb"><option value="TL"'+(m.paraBirimi!=='USD'&&m.paraBirimi!=='EUR'?' selected':'')+'>TL</option><option value="USD"'+(m.paraBirimi==='USD'?' selected':'')+'>USD</option><option value="EUR"'+(m.paraBirimi==='EUR'?' selected':'')+'>EUR</option></select></div>' +
+    '<div><label>Müşteri Para Birimi</label><select id="c_pb" class="input">' + ymParaOptions(m.paraBirimi||'TL') + '</select></div>' +
     '<div><label>Vergi / TC Kimlik No</label><input id="c_vkn" value="'+esc(m.vkn||m.tckn||'')+'"></div>' +
     '<div><label>Açık Hesap Risk Limiti</label><input id="c_risk" type="number" step="0.01" value="'+esc(m.riskLimiti!=null?m.riskLimiti:'')+'"></div>' +
     '<div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="c_muaf" style="display:none"'+(m.vergidenMuaf?' checked':'')+'> </label></div>' +
@@ -8063,8 +8240,27 @@ function cariDetail(type, id) {
   var balWord = '';
   // Müşteri: +bakiye = borçlu (bize borçlu), -bakiye = alacaklı
   // Tedarikçi: -bakiye = alacaklı (biz borçluyuz), +bakiye = borçlu (bize borçlu)
+  if (Math.abs(bal) < 0.02) bal = 0;
   if (isM) balWord = bal > 0 ? 'borçlu' : bal < 0 ? 'alacaklı' : '';
-  else balWord = bal < 0 ? 'alacaklı' : bal > 0 ? 'borçlu' : '';
+  else {
+    // Tedarikçi: açık alış yoksa borç gösterme
+    try {
+      if (Math.abs(bal) > 0.02) {
+        var _ka = 0;
+        (dbGet('alislar')||[]).forEach(function(a){
+          if (String(a.tedarikciId)!==String(id)) return;
+          if (a.durum==='iptal'||a.durum==='taslak'||a.durum==='siparis'||a.odendi||a.durum==='odendi') return;
+          var top=Number(a.tutar)||0, od=Number(a.odenen)||Number(a.tahsil)||0;
+          if(!od && Array.isArray(a.odemeler)) a.odemeler.forEach(function(o){od+=Number(o.tutar)||0;});
+          _ka += Math.max(0, top-od);
+        });
+        if (_ka < 0.02) { bal = 0; }
+        else bal = -_ka;
+      }
+    } catch(e){}
+    if (Math.abs(bal) < 0.02) bal = 0;
+    balWord = bal < 0 ? 'alacaklı' : bal > 0 ? 'borçlu' : '';
+  }
 
   var satislar = (dbGet(isM ? 'satislar' : 'alislar') || []).filter(function(s){
     return String(s.cariId||'')===String(id) || String(s.musteriId||'')===String(id) || String(s.tedarikciId||'')===String(id) || s.cari===m.unvan;
@@ -8181,8 +8377,16 @@ function cariDetail(type, id) {
   function belgeVadesiGecmisAcik(s) {
     if (!s) return false;
     if (s.durum === 'iptal' || s.odendi || s.durum === 'odendi') return false;
-    if (s.belgeTipi === 'proforma' || s.durum === 'proforma' || s.durum === 'taslak') return false;
-    var vd = String(s.vade || '').slice(0, 10);
+    if (s.belgeTipi === 'proforma' || s.durum === 'proforma' || s.durum === 'taslak' || s.tip === 'proforma') return false;
+    var mid = s.musteriId || s.cariId || s.tedarikciId;
+    var cari = null;
+    try {
+      if (mid) {
+        cari = (dbGet('musteriler')||[]).find(function(x){return String(x.id)===String(mid);})
+          || (dbGet('tedarikciler')||[]).find(function(x){return String(x.id)===String(mid);});
+      }
+    } catch (e) {}
+    var vd = (typeof ymEfektifVade === 'function') ? ymEfektifVade(s, cari) : String(s.vade || s.tarih || '').slice(0, 10);
     if (!vd || vd >= todayC) return false;
     var top = Number(s.tutar) || Number(s.genelToplam) || 0;
     var tah = Number(s.tahsil) || 0;
@@ -8673,7 +8877,7 @@ function urunForm() {
     : "state._view={};go('urunler')";
 
   var birimler = ['Adet','Ay','Bağ','Bidon','Boy','Cc','Cilt','Cm','Cm2','Çift','Çuval','Dakika','Dekar','Desi','Deste','Dilım','Dönem','Düzine','Galon','Gram','Gross','Grup','Gün','Hektar','Ibc','Karat','Kasa','Kavanoz','Kilogram','Kilometre','Kişi','Koçan','Koli','Kontör','Kova','Kutu','Kwatt','Kwh','Libre','Litre','Metre','Metre2','Metre3','Metretül','Mililitre','Milimetre','Mwh','Paket','Palet','Porsiyon','Puan','Rulo','Saat','Saniye','Santilitre','Sayfa','Seans','Servis','Set','Sqft2','Sütun/Cm','Şişe','Tabaka','Takım','Teneke','Tepsi','Test','Tır','Ton','Top','Torba','Ünite','Varil','Viyol','Yard','Yıl','Kg'];
-  var curr = ['TL','USD','EUR','GBP','CHF','AZN','MKD','TMT','GEL','RUB','BGN','CAD','AUD','IRR','IQD','SAR','AED','MRO','CNY','LEI','JPY','SEK','NOK','DKK','PLN','INR','KRW','TRY'];
+  var curr = (typeof YM_PARA_BIRIMLERI!=='undefined'?YM_PARA_BIRIMLERI.slice():['TL','USD','EUR','GBP','CHF','AZN','MKD','TMT','GEL','RUB','BGN','CAD','AUD','IRR','IQD','SAR','AED','MRO','CNY','LEI','JPY','SEK','NOK','DKK','PLN','INR','KRW']);
   var kdvL = ['20','19','18','16','15','14','13','12','11','10','9','8','7','6','5','4','1','0'];
 
   function optList(arr, sel) {
@@ -9452,7 +9656,7 @@ function urunDetail(id) {
     try {
       var el = document.getElementById('urunBarcodeSvg');
       if (el && barkod && typeof JsBarcode !== 'undefined') {
-        JsBarcode(el, barkod, { format:'CODE128', width:1.6, height:48, displayValue:true, fontSize:12, margin:0 });
+        ymDrawBarcode(el, barkod, { width:1.6, height:48, fontSize:12 });
       }
     } catch (e) {}
   }, 40);
@@ -9592,7 +9796,7 @@ function urunSayimPage(id) {
     try {
       var el = document.getElementById('sayimBarcodeSvg');
       if (el && barkod && typeof JsBarcode !== 'undefined') {
-        JsBarcode(el, barkod, { format:'CODE128', width:1.4, height:42, displayValue:true, fontSize:11, margin:0 });
+        ymDrawBarcode(el, barkod, { width:1.4, height:42, fontSize:11 });
       }
     } catch(e) {}
   }, 40);
@@ -10201,7 +10405,7 @@ window.yazdirSatis = function(id) {
 ;
 
 function satisYeniMüşteriModal() {
-  var paras = ['TL','USD','EUR','GBP','CHF','AZN','RUB','SAR','AED','CNY'];
+  var paras = YM_PARA_BIRIMLERI;
   var pOpts = paras.map(function(p){ return '<option value="'+p+'">'+p+'</option>'; }).join('');
   return '<div class="modal-bg" onclick="if(event.target===this){state._view={};go(\'satislar\')}"><div class="modal" style="max-width:520px">'+
     '<div class="modal-h" style="background:#2dd4bf;color:#0f172a">Yeni Müşteri Ekle<button type="button" onclick="state._view={};go(\'satislar\')">X</button></div>'+
@@ -10545,7 +10749,7 @@ window.satisUrunSecildi = function(val) {
   }).join('');
   var urunPara = (u.paraBirimi || u.currency || 'TL').toUpperCase().replace('TRY','TL');
   var cariPara = (typeof getBelgeCariPara === 'function' ? getBelgeCariPara() : 'TL') || 'TL';
-  var curOpts = ['TL','USD','EUR','GBP','CHF','AZN','SAR','AED','RUB','CNY'].map(function(c){
+  var curOpts = YM_PARA_BIRIMLERI.map(function(c){
     return '<option value="'+c+'"'+(c===urunPara?' selected':'')+'>'+c+'</option>';
   }).join('');
 
@@ -10749,7 +10953,21 @@ window.satisKaydet = function(tip) {
   var belgeNo = ((document.getElementById('sat_belge')||{}).value || state._view.belgeNo || '').trim();
   if (!isPer && !belgeNo) belgeNo = nextSatisBelgeNo();
   var tarih = (document.getElementById('sat_tarih')||{}).value || todayISO();
-  var vade = (document.getElementById('sat_vade')||{}).value || tarih;
+  var vadeIn = (document.getElementById('sat_vade')||{}).value || '';
+  var vade = vadeIn || tarih;
+  // Sabit vade girilmediyse (boş veya belge tarihi): cari vade günü uygula
+  try {
+    var _cari = (state._view && state._view.cari) || {};
+    var _mid = _cari.id || state._view.cariId;
+    if (_mid && _mid !== 'perakende') {
+      var _m = (dbGet('musteriler')||[]).find(function(x){ return String(x.id)===String(_mid); });
+      var gun = _m && _m.vadeGun != null ? parseInt(_m.vadeGun, 10) : 0;
+      if ((!vadeIn || vadeIn === tarih) && gun > 0) {
+        var _d = (typeof ymParseDateOnly === 'function' ? ymParseDateOnly(tarih) : new Date(tarih + 'T12:00:00'));
+        if (_d) { _d.setDate(_d.getDate() + gun); vade = _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0'); }
+      }
+    }
+  } catch (e) {}
   var sevk = (document.getElementById('sat_sevk')||{}).value || tarih;
   var irs = ((document.getElementById('sat_irs')||{}).value || '').trim();
   var acik = ((document.getElementById('sat_acik')||{}).value || state._view.aciklama || '').trim();
@@ -11202,7 +11420,7 @@ function alisKalemModal(u){
   var fiyat=Number(u.alisFiyat!=null?u.alisFiyat:u.fiyat)||0;
   var urunPara=String(u.paraBirimi||u.alisPara||u.currency||'TL').toUpperCase().replace('TRY','TL');
   var cariPara=(typeof getBelgeCariPara==='function'?getBelgeCariPara():'TL')||'TL';
-  var curOpts=['TL','USD','EUR','GBP','CHF','AZN','SAR','AED'].map(function(c){return '<option value="'+c+'"'+(c===urunPara?' selected':'')+'>'+c+'</option>';}).join('');
+  var curOpts=YM_PARA_BIRIMLERI.map(function(c){return '<option value="'+c+'"'+(c===urunPara?' selected':'')+'>'+c+'</option>';}).join('');
   var kombs = alisBuildKombs(u);
   window.__alisKombs = kombs;
   var urunAd = String(u.ad||'Ürün').trim();
@@ -11366,7 +11584,21 @@ window.alisKaydetTip=function(tip){
   var g=function(i){var e=document.getElementById(i);return e?e.value.trim():''};
   var t=alisTop(lines),no=g('al_no')||nextAlisNo();
   if(v.editId)alisGeriAl(v.editId);
-  var rec={id:v.editId||uid('a'),no:no,tedarikciId:c.id,tedarikci:c.unvan||c.ad||'',tutar:t.top,tarih:g('al_tarih')||todayISO(),vade:g('al_vade'),masraf:g('al_masraf'),aciklama:g('al_acik'),durum:tip==='siparis'?'taslak':tip,
+  var rec={id:v.editId||uid('a'),no:no,tedarikciId:c.id,tedarikci:c.unvan||c.ad||'',tutar:t.top,tarih:(g('al_tarih')||todayISO()),vade:(function(){
+    var tr=g('al_tarih')||todayISO(), vd=g('al_vade');
+    if(vd && vd!==tr) return vd;
+    var gun=0;
+    try {
+      var td=(dbGet('tedarikciler')||[]).find(function(x){return String(x.id)===String(c.id);});
+      if(td&&td.vadeGun!=null) gun=parseInt(td.vadeGun,10)||0;
+    } catch(e){}
+    if(!vd) vd=tr;
+    if(gun>0 && (!g('al_vade') || g('al_vade')===tr)) {
+      var d=typeof ymParseDateOnly==='function'?ymParseDateOnly(tr):new Date(tr+'T12:00:00');
+      if(d){ d.setDate(d.getDate()+gun); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    }
+    return vd||tr;
+  })(),masraf:g('al_masraf'),aciklama:g('al_acik'),durum:tip==='siparis'?'taslak':tip,
     kalemler:lines.map(function(l){return Object.assign({},l,{tutar:satisLineTot(l).top})}),created:new Date().toISOString()};
   var list=dbGet('alislar');list.push(rec);dbSet('alislar',list);
   if(tip!=='siparis')alisUygula(rec,1);
@@ -14059,7 +14291,7 @@ window.ymFcClose = function() {
 window.ymFcHome = function() {
   var home = document.getElementById('ymFcHome');
   if (home) home.style.display = '';
-  ['bildirim','takvim','yedek','etiket','karsilastir','hizli'].forEach(function(k){
+  ['bildirim','takvim','karsilastir','hizli'].forEach(function(k){
     var el = document.getElementById('ymFcSec_' + k);
     if (el) { el.classList.remove('on'); el.innerHTML = ''; }
   });
@@ -14069,7 +14301,7 @@ window.ymFcHome = function() {
 window.ymFcShow = function(sec) {
   var home = document.getElementById('ymFcHome');
   if (home) home.style.display = 'none';
-  ['bildirim','takvim','yedek','etiket','karsilastir','hizli'].forEach(function(k){
+  ['bildirim','takvim','karsilastir','hizli'].forEach(function(k){
     var el = document.getElementById('ymFcSec_' + k);
     if (!el) return;
     if (k === sec) { el.classList.add('on'); } else { el.classList.remove('on'); el.innerHTML = ''; }
@@ -14078,8 +14310,6 @@ window.ymFcShow = function(sec) {
   if (!box) return;
   if (sec === 'bildirim') ymFcRenderBildirim(box);
   else if (sec === 'takvim') ymFcRenderTakvim(box);
-  else if (sec === 'yedek') ymFcRenderYedek(box);
-  else if (sec === 'etiket') ymFcRenderEtiket(box);
   else if (sec === 'karsilastir') ymFcRenderKarsilastir(box);
   else if (sec === 'hizli') ymFcRenderHizli(box);
 };
@@ -14204,8 +14434,8 @@ function ymFcRenderYedek(box) {
     '<h3 style="margin:0 0 10px;font-size:15px">Veri Yedekleme</h3>'+
     '<p style="font-size:12px;color:#64748b;line-height:1.45;margin:0 0 12px">Tüm yerel veriler (müşteri, ürün, satış, alış, hesap…) JSON olarak indirilir veya geri yüklenir. Sunucu gerekmez.</p>'+
     '<div class="ym-fc-quick">'+
-    '<button type="button" onclick="ymFcYedekIndir()">⬇️ Yedeği İndir (JSON)</button>'+
-    '<button type="button" onclick="document.getElementById(\'ymFcYedekFile\').click()">⬆️ Yedekten Geri Yükle</button>'+
+    '<button type="button" onclick="ymFcYedekIndir()">Yedeği İndir (JSON)</button>'+
+    '<button type="button" onclick="document.getElementById(\'ymFcYedekFile\').click()">Yedekten Geri Yükle</button>'+
     '<input type="file" id="ymFcYedekFile" accept="application/json,.json" style="display:none" onchange="ymFcYedekYukle(event)">'+
     '</div>';
 }
@@ -14372,15 +14602,15 @@ function ymFcRenderHizli(box) {
     '<button type="button" class="ym-fc-back" onclick="ymFcHome()">← Geri</button>'+
     '<h3 style="margin:0 0 10px;font-size:15px">Hızlı İşlemler</h3>'+
     '<div class="ym-fc-quick">'+
-    '<button type="button" onclick="ymFcClose();state._view={};go(\'satislar\')">🛒 Satışlar</button>'+
-    '<button type="button" onclick="ymFcClose();state._view={};go(\'alislar\')">📦 Alışlar</button>'+
-    '<button type="button" onclick="ymFcClose();state._view={};go(\'musteriler\')">👤 Müşteriler</button>'+
-    '<button type="button" onclick="ymFcClose();state._view={};go(\'tedarikciler\')">🏭 Tedarikçiler</button>'+
-    '<button type="button" onclick="ymFcClose();state._view={};go(\'urunler\')">🏷️ Ürünler</button>'+
-    '<button type="button" onclick="ymFcClose();state._view={};go(\'masraflar\')">💸 Masraflar</button>'+
-    '<button type="button" onclick="ymFcClose();state._view={};go(\'hesaplar\')">🏦 Hesaplarım</button>'+
-    '<button type="button" onclick="ymFcClose();go(\'takvim\')">📅 Takvim</button>'+
-    '<button type="button" onclick="ymFcClose();go(\'raporlar\')">📈 Raporlar</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'satislar\')">Satışlar</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'alislar\')">Alışlar</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'musteriler\')">Müşteriler</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'tedarikciler\')">Tedarikçiler</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'urunler\')">Ürünler</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'masraflar\')">Masraflar</button>'+
+    '<button type="button" onclick="ymFcClose();state._view={};go(\'hesaplar\')">Hesaplarım</button>'+
+    '<button type="button" onclick="ymFcClose();go(\'takvim\')">Takvim</button>'+
+    '<button type="button" onclick="ymFcClose();go(\'raporlar\')">Raporlar</button>'+
     '</div>';
 }
 
@@ -14400,9 +14630,23 @@ function ymBildirimSetRead(id) {
 function ymBildirimOkunduHepsi() {
   var list = ymToplaBildirimler();
   var m = ymBildirimReadMap();
-  list.forEach(function(b){ m[b.id] = true; });
+  list.forEach(function(b){ if (b && b.id) m[b.id] = true; });
   try { localStorage.setItem('ym_bildirim_ok', JSON.stringify(m)); } catch (e) {}
+  // listeyi yeniden okunmuş haliyle üret
+  list = ymToplaBildirimler();
+  window.__ymBildirimLast = list;
   ymBildirimUIYenile();
+  var toastEl = document.getElementById('topBellToast');
+  if (toastEl) { toastEl.classList.remove('on'); toastEl.innerHTML = ''; }
+  var badge = document.getElementById('topBellBadge');
+  if (badge) { badge.classList.remove('on'); badge.textContent = '0'; }
+  // panel listesinde unread class kaldır
+  var box = document.getElementById('topBellList');
+  if (box) {
+    Array.prototype.forEach.call(box.querySelectorAll('.tbp-item.unread'), function(el){
+      el.classList.remove('unread');
+    });
+  }
   toast('Tüm bildirimler okundu');
 }
 function ymToplaBildirimler() {
@@ -14426,7 +14670,7 @@ function ymToplaBildirimler() {
       var kalan = Number(s.kalan != null ? s.kalan : s.tutar) || 0;
       if (kalan <= 0 && s.odemeDurum === 'odendi') return;
       var musteri = s.musteriAd || s.cariAd || s.unvan || 'Müşteri';
-      var id = 'sat_vade_' + (s.id || s.no || Math.random());
+      var id = 'sat_vade_' + (s.id || s.no || ('x'+String(s.musteriAd||s.unvan||'')+'_'+String(s.tarih||s.vade||'')));
       out.push({
         id: id,
         tip: 'tahsilat',
@@ -14454,7 +14698,7 @@ function ymToplaBildirimler() {
       var vd = new Date(vade); vd.setHours(0,0,0,0);
       if (isNaN(vd.getTime()) || vd >= today) return;
       var ted = a.tedarikciAd || a.cariAd || a.unvan || 'Tedarikçi';
-      var id = 'alis_vade_' + (a.id || a.no || Math.random());
+      var id = 'alis_vade_' + (a.id || a.no || ('x'+String(a.tedarikciAd||a.unvan||'')+'_'+String(a.tarih||a.vade||'')));
       out.push({
         id: id,
         tip: 'odeme',
@@ -14477,7 +14721,7 @@ function ymToplaBildirimler() {
   try {
     (dbGet('hatirlatmalar') || []).forEach(function(h) {
       if (!h || h.tamam || h.done) return;
-      var id = 'hat_' + (h.id || h.baslik || Math.random());
+      var id = 'hat_' + (h.id || h.baslik || ('x'+String(h.mesaj||h.aciklama||'')+'_'+String(h.tarih||'')));
       out.push({
         id: id,
         tip: 'hatirlatma',
@@ -14495,7 +14739,7 @@ function ymToplaBildirimler() {
   try {
     (dbGet('takvim') || dbGet('takvimNotlari') || []).forEach(function(h) {
       if (!h) return;
-      var id = 'tk_' + (h.id || Math.random());
+      var id = 'tk_' + (h.id || ('x'+String(h.baslik||h.not||'')+'_'+String(h.tarih||'')));
       if (read[id] && h.okundu) return;
       var dt = h.tarih ? new Date(h.tarih) : null;
       if (dt && !isNaN(dt.getTime())) {
@@ -15203,7 +15447,7 @@ function hesapForm() {
   return '<div class="toolbar"><button type="button" class="btn btn-ghost" onclick="state._view=' + (isEdit ? '{detail:\'' + editId + '\'}' : '{}') + ';go(\'hesaplar\')">Geri</button></div>' +
     '<div class="card" style="max-width:480px;margin:12px auto 40px;position:relative;z-index:2;"><div class="card-h" style="background:#2dd4bf;color:#0f172a;"><h3 style="margin:0;">' + (isEdit ? 'Hesap Güncelleme' : ('Yeni ' + esc(tip) + ' Hesabı')) + '</h3></div><div class="card-b">' +
     '<div class="field"><label>Hesap Adı / Tanım</label><input class="input" id="h_ad" value="' + esc(h.ad || '') + '"></div>' +
-    '<div class="field"><label>Para Birimi</label><select class="input" id="h_pb"><option>TL</option><option>USD</option><option>EUR</option></select></div>' +
+    '<div class="field"><label>Para Birimi</label><select class="input" id="h_pb">' + ymParaOptions(h.paraBirimi||'TL') + '</select></div>' +
     '<div class="field"><label>Hesap No</label><input class="input" id="h_no" placeholder="isteğe bağlı" value="' + esc(h.hesapNo || h.hesapKodu || '') + '"></div>' +
     '<div class="field"><label>Güncel Bakiye</label><input class="input" id="h_bakiye" type="number" step="0.01" value="' + (h.bakiye != null ? h.bakiye : 0) + '"></div>' +
     '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-top:16px">' +
@@ -15396,7 +15640,7 @@ function calisanForm() {
       '<div><label>Cep Telefonu</label><input class="input" id="c_tel" placeholder="isteğe bağlı"></div></div>'
       :
       '<div class="form-grid">' +
-      '<div><label>Cari Para Birimi</label><select class="input" id="c_pb"><option>TL</option><option>USD</option><option>EUR</option></select></div>' +
+      '<div><label>Cari Para Birimi</label><select class="input" id="c_pb">' + ymParaOptions((m&&m.paraBirimi)||'TL') + '</select></div>' +
       '<div><label>Adres</label><textarea class="input" id="c_adres" rows="2"></textarea></div>' +
       '<div><label>İşe Giriş Tarihi</label><input class="input" id="c_giris" type="date"></div>' +
       '<div><label>İşten Ayrılış Tarihi</label><input class="input" id="c_cikis" type="date"></div>' +
@@ -18055,7 +18299,44 @@ window.encodeCode128 = function(text) {
 window.drawCode128 = function(target, code, opts) {
   opts = opts || {};
   var w = opts.width || 200, h = opts.height || 50;
-  code = String(code || '');
+  code = String(code || '').trim();
+  // Doğru barkod tipi: EAN-13 / EAN-8 / CODE128 (JsBarcode varsa)
+  if (typeof JsBarcode !== 'undefined') {
+    try {
+      var fmt = (typeof ymBarkodFormat === 'function') ? ymBarkodFormat(code) : 'CODE128';
+      var canvasJ = document.createElement('canvas');
+      JsBarcode(canvasJ, code, {
+        format: fmt,
+        width: Math.max(1.2, (w / Math.max(code.length, 12)) * 0.9),
+        height: h,
+        displayValue: false,
+        margin: 0,
+        background: '#ffffff',
+        lineColor: '#000000'
+      });
+      if (target === 'data') return canvasJ.toDataURL('image/png');
+      var tag0 = (target && target.tagName) ? String(target.tagName).toLowerCase() : '';
+      if (tag0 === 'canvas') {
+        var c0 = target; var x0 = c0.getContext('2d');
+        c0.width = canvasJ.width; c0.height = canvasJ.height;
+        x0.fillStyle = '#fff'; x0.fillRect(0,0,c0.width,c0.height);
+        x0.drawImage(canvasJ, 0, 0);
+        return;
+      }
+      if (tag0 === 'svg') {
+        // svg yerine image
+        while (target.firstChild) target.removeChild(target.firstChild);
+        var img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', canvasJ.toDataURL('image/png'));
+        img.setAttribute('width', canvasJ.width);
+        img.setAttribute('height', canvasJ.height);
+        target.setAttribute('width', canvasJ.width);
+        target.setAttribute('height', canvasJ.height);
+        target.appendChild(img);
+        return;
+      }
+    } catch (eJ) { /* klasik CODE128 yedek */ }
+  }
   var pattern = encodeCode128(code);
   var fs = Math.max(11, Math.round(h * 0.2));   // yazı boyutu barkod yüksekliğiyle ölçeklenir
   var th = h + fs + 5;
@@ -20757,7 +21038,6 @@ NAV.length=0;
  {id:'alislar',label:'Alışlar',icon:'bag'},
  {id:'grp-nakit',label:'Nakit Yönetimi',icon:'wallet',children:[
    {id:'hesaplar',label:'Hesaplarım'},
-   {id:'bankaHareketleri',label:'Banka Hareketleri'},
    {id:'calisanlar',label:'Çalışanlar'},
    {id:'masraflar',label:'Masraflar'},
    {id:'kredi',label:'Krediler'},
