@@ -26,7 +26,7 @@
       'efatura':'e-fatura','e-fatura':'e-fatura',
       'hesaplar':'hesaplarim','hesaplarim':'hesaplarim',
       'banka-hareketleri':'bankaHareketleri','bankahareketleri':'bankaHareketleri','banka':'bankaHareketleri',
-      'calisanlar':'calisanlar','masraflar':'masraflar',
+      'calisanlar':'calisanlar','masraflar':'masraflar','gelirler','gelirKalemleri',
       'kredi':'krediler','krediler':'krediler',
       'raporlar':'raporlar','finansal-raporlar':'finansal-raporlar',
       'stok-raporlari':'stok-raporlari','musteri-listesi-rapor':'musteri-listesi-rapor',
@@ -3635,7 +3635,10 @@ tr.cari-pasif:hover td{background:#c4c8cf!important}
             <div id="topBellList"><div class="tbp-empty">Bildirim yok</div></div>
           </div>
         </div>
-        
+        <button type="button" class="top-cal-btn" id="topCalBtn" title="Takvim" onclick="go('takvim')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          <span class="d" id="topCalDay"></span>
+        </button>
         <div class="user-chip" id="userChip" onclick="toggleUserMenu(event)">
           <div class="av" id="userAv">Y</div><span id="userName">Kullanici</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
@@ -5706,6 +5709,7 @@ var NAV = [
   { id: 'grp-nakit', label: 'Nakit Yönetimi', icon: 'wallet', children: [
     { id: 'hesaplar', label: 'Hesaplarım' },
     { id: 'masraflar', label: 'Masraflar' },
+    { id: 'gelirler', label: 'Gelirler' },
     { id: 'kredi', label: 'Krediler' },
     { id: 'demirbaslar', label: 'Demirbaşlar' },
     { id: 'calisanlar', label: 'Çalışanlar' },
@@ -5791,7 +5795,7 @@ function buildNav() {
   if (el) el.innerHTML = html;
   try {
     var openIds = {};
-    if (state.page === 'gelenEfaturalar' || state.page === 'olusturulanEfaturalar' || state.page === 'arsivlenenFaturalar' || state.page === 'efaturaKayit' || state.page === 'fatura' || state.page === 'gelenFaturalar' || state.page === 'hesaplar' || state.page === 'bankaHareketleri' || state.page === 'masraflar' || state.page === 'kredi' || state.page === 'demirbaslar' || state.page === 'calisanlar') openIds['grp-nakit'] = 1;
+    if (state.page === 'gelenEfaturalar' || state.page === 'olusturulanEfaturalar' || state.page === 'arsivlenenFaturalar' || state.page === 'efaturaKayit' || state.page === 'fatura' || state.page === 'gelenFaturalar' || state.page === 'hesaplar' || state.page === 'bankaHareketleri' || state.page === 'masraflar' || state.page === 'gelirler' || state.page === 'kredi' || state.page === 'demirbaslar' || state.page === 'calisanlar') openIds['grp-nakit'] = 1;
     Object.keys(openIds).forEach(function(gid) {
       var btn = el && el.querySelector('[data-group="' + gid + '"]');
       var sub = document.getElementById('sub-' + gid);
@@ -5829,7 +5833,7 @@ var TITLES = {
   takvim: 'Takvim', musteriler: 'Müşteriler', tedarikciler: 'Tedarikçiler',
   urunler: 'Ürünler', depolar: 'Depolar', varyantlar: 'Varyantlar', stok: 'Stok Ekstresi', ozelfiyat: 'Özel Fiyat Listesi',
   satislar: 'Satışlar', alislar: 'Alışlar', gelenEfaturalar:'Gelen E-Faturalar',efaturaKayit:'E-Fatura Kaydı', fatura: 'Faturalar', gelenEfaturalar: 'Gelen E-Faturalar', efaturaKayit: 'E-Fatura Kaydı', efatura: 'e-Fatura', destek: 'Yardım / Destek',
-  masraflar: 'Masraflar', hesaplar: 'Hesaplarım', kredi: 'Krediler', demirbaslar: 'Demirbaşlar', calisanlar: 'Çalışanlar',
+  masraflar: 'Masraflar', gelirler: 'Gelirler', hesaplar: 'Hesaplarım', kredi: 'Krediler', demirbaslar: 'Demirbaşlar', calisanlar: 'Çalışanlar',
   raporlar: 'Raporlar', profilim: 'Profilim', ayarlar: 'Ayarlar', kullanicilar: 'Kullanıcılar', tanimlar: 'Tanımlar',
   'fatura-ayar': 'YanMuhasebe Fatura', etiket: 'Etiket Şablonları',
   yanmali: 'YanMali — Mali Müşavir',
@@ -13774,6 +13778,233 @@ window.ymRunCariListe=function(key){
 
 
 
+
+/* ========== GELİRLER (Masraflar'ın gelir karşılığı) ========== */
+function ensureDefaultGelirKalemleri() {
+  var list = [];
+  try { list = dbGet('gelirKalemleri') || []; } catch (e) { list = []; }
+  if (list.length) return list;
+  list = [
+    { id: 'gk_1', ad: 'Hizmet Geliri', ust: null },
+    { id: 'gk_2', ad: 'Satış Dışı Gelir', ust: null },
+    { id: 'gk_3', ad: 'Kira Geliri', ust: null },
+    { id: 'gk_4', ad: 'Faiz Geliri', ust: null },
+    { id: 'gk_5', ad: 'Komisyon Geliri', ust: null },
+    { id: 'gk_6', ad: 'Diğer Gelirler', ust: null },
+    { id: 'gk_1a', ad: 'Danışmanlık', ust: 'Hizmet Geliri' },
+    { id: 'gk_1b', ad: 'Bakım / Onarım', ust: 'Hizmet Geliri' },
+    { id: 'gk_6a', ad: 'Hurda / Demirbaş Satış', ust: 'Diğer Gelirler' }
+  ];
+  try { dbSet('gelirKalemleri', list); } catch (e) {}
+  return list;
+}
+function gelirKalemOptions(selected) {
+  ensureDefaultGelirKalemleri();
+  var list = dbGet('gelirKalemleri') || [];
+  selected = selected || '';
+  return list.map(function(k) {
+    var label = k.ust ? (k.ust + ' → ' + k.ad) : k.ad;
+    var val = k.ust ? (k.ust + ' / ' + k.ad) : k.ad;
+    return '<option value="' + esc(val) + '"' + (selected === val || selected === k.ad ? ' selected' : '') + '>' + esc(label) + '</option>';
+  }).join('');
+}
+pages.gelirler = function() {
+  if (state._view && state._view.form) return gelirForm();
+  if (state._view && state._view.kalemler) return gelirKalemleriPage();
+  var list = (dbGet('gelirler') || []).slice().reverse();
+  var filter = (state._view && state._view.filter) || 'all';
+  var todayM = todayISO();
+  if (filter === 'alinan') list = list.filter(function(m){ return m.durum === 'Alınd' || m.tahsil || m.odendi; });
+  if (filter === 'bekleyen') list = list.filter(function(m){ return !m.tahsil && !m.odendi && m.durum !== 'Alınd'; });
+  if (filter === 'gecikmis') list = list.filter(function(m){
+    if (m.tahsil || m.odendi || m.durum === 'Alınd') return false;
+    var vd = String(m.vade || '').slice(0,10);
+    return vd && vd < todayM;
+  });
+  var rows = list.map(function(m) {
+    return [
+      fmtDate(m.tarih || m.created),
+      esc(m.belgeNo || '—'),
+      fmtDate(m.vade || '—'),
+      esc(m.kalem || m.aciklama || '—'),
+      esc(m.hesap || '—'),
+      fmtMoney(m.tutar),
+      esc(m.odemeSekli || '—'),
+      esc(m.durum || (m.tahsil || m.odendi ? 'Alınd' : 'Bekliyor')),
+      esc(m.not || ''),
+      '<div class="dd" id="ddG_' + m.id + '"><button class="btn btn-ghost btn-sm" onclick="toggleDd(\'ddG_' + m.id + '\')">İşlem ▾</button>' +
+      '<div class="dd-menu">' +
+      '<button type="button" onclick="state._view={form:true,edit:\'' + m.id + '\'};go(\'gelirler\')">Düzenle</button>' +
+      '<button type="button" onclick="deleteGelir(\'' + m.id + '\')">Sil</button>' +
+      '</div></div>'
+    ];
+  });
+  function filtBtn(f, label, color) {
+    var on = filter === f;
+    return '<button class="btn btn-sm" style="border:0;border-radius:8px;font-weight:700;' +
+      (on ? 'background:' + (color || '#0f172a') + ';color:#fff' : 'background:#e2e8f0;color:#334155') +
+      '" onclick="state._view={filter:\'' + f + '\'};go(\'gelirler\')">' + label + '</button>';
+  }
+  return '<div class="toolbar">' +
+    '<button class="btn btn-lime" onclick="state._view={form:true};go(\'gelirler\')">+ Yeni Gelir Gir</button> ' +
+    '<button class="btn" style="background:#0ea5e9;color:#fff;border:0" onclick="state._view={kalemler:true};go(\'gelirler\')">Gelir Kalemleri</button> ' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">' +
+    filtBtn('alinan', 'Alınanlar', '#16a34a') +
+    filtBtn('bekleyen', 'Bekleyenler', '#64748b') +
+    filtBtn('gecikmis', 'Gecikmişler', '#dc2626') +
+    filtBtn('all', 'Tümü', '#0f172a') +
+    '</div>' +
+    tableHTML(['İşlem Tarihi', 'Belge No', 'Vadesi', 'Gelir', 'Hesap', 'Tutar', 'Ödeme', 'Durumu', 'Not', ' '], rows);
+};
+function gelirForm() {
+  var edit = state._view.edit;
+  var m = edit ? ((dbGet('gelirler') || []).find(function(x){ return x.id === edit; }) || {}) : {};
+  ensureDefaultGelirKalemleri();
+  var hesaplar = dbGet('hesaplar') || [];
+  var hopts = hesaplar.filter(function(h){ return !h.pasif; }).map(function(h){
+    return '<option value="' + h.id + '" ' + (m.hesapId === h.id ? 'selected' : '') + '>' + esc(h.ad) + ' (' + fmtMoney(h.bakiye, h.paraBirimi||'TL') + ')</option>';
+  }).join('');
+  var durum = (m.tahsil || m.odendi || m.durum === 'Alınd') ? 'Alindi' : 'Bekliyor';
+  return '<div class="toolbar"><button class="btn btn-lime" onclick="saveGelir()">Kaydet</button> ' +
+    '<button class="btn btn-ghost" onclick="state._view={};go(\'gelirler\')">Geri Dön</button></div>' +
+    '<div class="sec-grid">' +
+    '<div class="sec"><div class="sec-h" style="background:#16a34a;color:#fff">GELİR KALEMİ</div><div class="sec-b">' +
+    '<div class="field"><label>Gelir Kalemi</label><select class="input" id="gl_kalem">' + gelirKalemOptions(m.kalem || '') + '</select></div>' +
+    '<div class="field"><label>İşlem Tarihi</label><input class="input" id="gl_tarih" type="date" value="' + (m.tarih || todayISO()) + '"></div>' +
+    '<div class="field"><label>Fiş/Belge No</label><input class="input" id="gl_belge" value="' + esc(m.belgeNo || '') + '"></div>' +
+    '<div class="field"><label>Açıklama / Not</label><textarea class="input" id="gl_ack" rows="2">' + esc(m.not || '') + '</textarea></div>' +
+    '</div></div>' +
+    '<div class="sec"><div class="sec-h" style="background:#0ea5e9;color:#fff">TUTAR & HESAP</div><div class="sec-b">' +
+    '<div class="field"><label>Tutar</label><input class="input" id="gl_tutar" type="number" step="0.01" value="' + (m.tutar != null ? m.tutar : '') + '"></div>' +
+    '<div class="field"><label>KDV %</label><input class="input" id="gl_kdv" type="number" step="0.01" value="' + (m.kdv != null ? m.kdv : '0') + '"></div>' +
+    '<div class="field"><label>Hesap</label><select class="input" id="gl_hesap"><option value="">— Seçin —</option>' + hopts + '</select></div>' +
+    '<div class="field"><label>Vade / Tahsil Tarihi</label><input class="input" id="gl_vade" type="date" value="' + (m.vade || m.odemeTarih || todayISO()) + '"></div>' +
+    '<div class="field"><label>Durum</label><select class="input" id="gl_durum"><option value="Alindi"' + (durum==='Alindi'?' selected':'') + '>Alınd</option><option value="Bekliyor"' + (durum==='Bekliyor'?' selected':'') + '>Bekliyor</option></select></div>' +
+    '<div class="field"><label>Ödeme Şekli</label><select class="input" id="gl_sekil"><option>Nakit</option><option>Banka</option><option>Kart</option><option>Diğer</option></select></div>' +
+    '</div></div></div>';
+}
+window.saveGelir = function() {
+  var tutar = Number((document.getElementById('gl_tutar') || {}).value) || 0;
+  if (!tutar) return toast('Tutar girin');
+  var kalem = ((document.getElementById('gl_kalem') || {}).value || '').trim();
+  if (!kalem) return toast('Gelir kalemi seçin');
+  var durum = (document.getElementById('gl_durum') || {}).value || 'Bekliyor';
+  var hesapId = (document.getElementById('gl_hesap') || {}).value || '';
+  var list = dbGet('gelirler') || [];
+  var edit = state._view.edit;
+  var old = edit ? list.find(function(x){ return x.id === edit; }) : null;
+  // Eski tahsilatı geri al
+  if (old && old.tahsil && old.hesapId && Number(old.tutar)) {
+    try {
+      var hs0 = dbGet('hesaplar') || [];
+      hs0.forEach(function(h){
+        if (h.id === old.hesapId) h.bakiye = (Number(h.bakiye)||0) - (Number(old.tutar)||0);
+      });
+      dbSet('hesaplar', hs0);
+    } catch (e) {}
+  }
+  var row = {
+    id: edit || uid('gl'),
+    kalem: kalem,
+    aciklama: kalem,
+    tarih: (document.getElementById('gl_tarih') || {}).value || todayISO(),
+    belgeNo: (document.getElementById('gl_belge') || {}).value || '',
+    not: (document.getElementById('gl_ack') || {}).value || '',
+    hesapId: hesapId,
+    hesap: ((dbGet('hesaplar') || []).find(function(h){ return h.id === hesapId; }) || {}).ad || '',
+    tutar: tutar,
+    kdv: Number((document.getElementById('gl_kdv') || {}).value) || 0,
+    vade: (document.getElementById('gl_vade') || {}).value || '',
+    durum: durum === 'Alindi' ? 'Alınd' : 'Bekliyor',
+    tahsil: durum === 'Alindi',
+    odendi: durum === 'Alindi',
+    odemeSekli: (document.getElementById('gl_sekil') || {}).value || 'Nakit',
+    created: (old && old.created) || new Date().toISOString()
+  };
+  if (edit) list = list.map(function(x){ return x.id === edit ? row : x; });
+  else list.push(row);
+  dbSet('gelirler', list);
+  // Alınd ise hesaba para girişi
+  if (row.tahsil && row.hesapId) {
+    try {
+      var hs = dbGet('hesaplar') || [];
+      var hedef = null;
+      hs.forEach(function(h){
+        if (h.id === row.hesapId) {
+          h.bakiye = (Number(h.bakiye)||0) + tutar;
+          hedef = h;
+        }
+      });
+      dbSet('hesaplar', hs);
+      var har = dbGet('hesapHareket') || [];
+      har.push({
+        id: uid('hh'), hesapId: row.hesapId, tarih: row.tarih || todayISO(),
+        islem: 'Gelir', kullanici: (state.user||{}).name||'', aciklama: row.kalem,
+        borc: 0, alacak: tutar, bakiye: hedef ? hedef.bakiye : 0
+      });
+      dbSet('hesapHareket', har);
+    } catch (e) {}
+  }
+  pushAct('Gelir kaydedildi: ' + fmtMoney(tutar));
+  state._view = {};
+  go('gelirler');
+  toast('Gelir kaydedildi');
+};
+window.deleteGelir = function(id) {
+  return ymConfirm('Gelir kaydı silinsin mi?', { title: 'Sil', okText: 'Sil', cancelText: 'İptal', danger: true }).then(function(ok){
+    if (!ok) return;
+    var list = dbGet('gelirler') || [];
+    var row = list.find(function(x){ return x.id === id; });
+    if (row && row.tahsil && row.hesapId && Number(row.tutar)) {
+      try {
+        var hs = dbGet('hesaplar') || [];
+        hs.forEach(function(h){
+          if (h.id === row.hesapId) h.bakiye = (Number(h.bakiye)||0) - (Number(row.tutar)||0);
+        });
+        dbSet('hesaplar', hs);
+      } catch (e) {}
+    }
+    dbSet('gelirler', list.filter(function(x){ return x.id !== id; }));
+    go('gelirler');
+    toast('Silindi');
+  });
+};
+function gelirKalemleriPage() {
+  ensureDefaultGelirKalemleri();
+  var list = dbGet('gelirKalemleri') || [];
+  var rows = list.map(function(k){
+    return [
+      esc(k.ust || '—'),
+      esc(k.ad),
+      '<button class="btn btn-ghost btn-sm" onclick="deleteGelirKalem(\'' + k.id + '\')">Sil</button>'
+    ];
+  });
+  return '<div class="toolbar"><button class="btn btn-ghost" onclick="state._view={};go(\'gelirler\')">Geri</button> ' +
+    '<button class="btn btn-lime" onclick="addGelirKalem()">+ Kalem Ekle</button></div>' +
+    '<div class="card" style="max-width:520px;margin:12px 0"><div class="card-b">' +
+    '<div class="field"><label>Üst Kalem (isteğe bağlı)</label><input class="input" id="gk_ust" placeholder="örn. Hizmet Geliri"></div>' +
+    '<div class="field"><label>Kalem Adı</label><input class="input" id="gk_ad" placeholder="örn. Danışmanlık"></div>' +
+    '</div></div>' +
+    tableHTML(['Üst Kalem', 'Kalem', ' '], rows);
+}
+window.addGelirKalem = function() {
+  var ad = ((document.getElementById('gk_ad')||{}).value||'').trim();
+  if (!ad) return toast('Kalem adı girin');
+  var ust = ((document.getElementById('gk_ust')||{}).value||'').trim() || null;
+  var list = dbGet('gelirKalemleri') || [];
+  list.push({ id: uid('gk'), ad: ad, ust: ust });
+  dbSet('gelirKalemleri', list);
+  state._view = { kalemler: true };
+  go('gelirler');
+  toast('Kalem eklendi');
+};
+window.deleteGelirKalem = function(id) {
+  dbSet('gelirKalemleri', (dbGet('gelirKalemleri')||[]).filter(function(x){ return x.id !== id; }));
+  state._view = { kalemler: true };
+  go('gelirler');
+};
+
 pages.masraflar = function() {
   if (state._view.form) return masrafForm();
   if (state._view.kalemler) return masrafKalemleri();
@@ -21142,6 +21373,7 @@ NAV.length=0;
    {id:'hesaplar',label:'Hesaplarım'},
    {id:'calisanlar',label:'Çalışanlar'},
    {id:'masraflar',label:'Masraflar'},
+   {id:'gelirler',label:'Gelirler'},
    {id:'kredi',label:'Krediler'},
    {id:'demirbaslar',label:'Demirbaşlar'},
    {id:'gelenEfaturalar',label:'Gelen E-Faturalar'},
