@@ -4519,6 +4519,15 @@ function esc(s) {
     .replace(/'/g,'&#39;');
 }
 /** onclick / attribute içi id-güvenli kaçış */
+
+window.YM_ALERT_ICON = '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" class="ym-alert-ico" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11 0.916656C5.43115 0.916656 0.916687 5.43112 0.916687 11C0.916687 16.5689 5.43115 21.0833 11 21.0833C16.5689 21.0833 21.0834 16.5689 21.0834 11C21.0834 5.43112 16.5689 0.916656 11 0.916656ZM11.9167 7.33332C11.9167 6.82706 11.5063 6.41666 11 6.41666C10.4938 6.41666 10.0834 6.82706 10.0834 7.33332V11C10.0834 11.5063 10.4938 11.9167 11 11.9167C11.5063 11.9167 11.9167 11.5063 11.9167 11V7.33332ZM11 13.75C10.4938 13.75 10.0834 14.1604 10.0834 14.6667C10.0834 15.1729 10.4938 15.5833 11 15.5833H11.0092C11.5154 15.5833 11.9259 15.1729 11.9259 14.6667C11.9259 14.1604 11.5154 13.75 11.0092 13.75H11Z" fill="#FC6060"/></svg>';
+function ymAlertIcon(size) {
+  var s = size || 22;
+  var svg = window.YM_ALERT_ICON || '';
+  if (s !== 22) svg = svg.replace(/width="22"/, 'width="'+s+'"').replace(/height="22"/, 'height="'+s+'"');
+  return svg;
+}
+
 function escAttr(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
@@ -5739,6 +5748,9 @@ var NAV = [
 function icon(name) {
   if (name === 'yantedarikci' && window.YT_LOGO) {
     return '<img src="'+window.YT_LOGO+'" alt="" style="width:18px;height:18px;object-fit:contain;border-radius:3px;flex-shrink:0">';
+  }
+  if (name === 'alert' || name === 'uyari' || name === 'danger') {
+    return typeof ymAlertIcon === 'function' ? ymAlertIcon(18) : (window.YM_ALERT_ICON || '');
   }
   var icons = {
     home: '<path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"/>',
@@ -8448,9 +8460,10 @@ function cariDetail(type, id) {
     }
   }
   var vadeUyariHtml = uyariMsg
-    ? ('<div class="cari-vade-uyari" style="position:absolute;right:12px;top:12px;z-index:5;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;max-width:260px;box-shadow:0 4px 14px rgba(15,23,42,.08)">' +
-      '<div style="font-weight:800;color:#0f172a;margin-bottom:4px">Uyarı!</div>' +
-      '<div style="color:#dc2626;font-size:13px;font-weight:600;line-height:1.35">' + esc(uyariMsg) + '</div></div>')
+    ? ('<div class="cari-vade-uyari" style="position:absolute;right:12px;top:12px;z-index:5;background:#fff;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;max-width:280px;box-shadow:0 4px 14px rgba(15,23,42,.08)">' +
+      '<div class="ym-alert-row">' + ymAlertIcon(20) +
+      '<div><div style="font-weight:800;color:#0f172a;margin-bottom:4px">Uyarı!</div>' +
+      '<div style="color:#dc2626;font-size:13px;font-weight:600;line-height:1.35">' + esc(uyariMsg) + '</div></div></div></div>')
     : '';
 
   return '<div class="toolbar"><button type="button" class="btn btn-ghost" onclick="state._view={};go(\''+key+'\')">← Listeye Dön</button></div>' +
@@ -9730,15 +9743,76 @@ window.showUrunStoklar = function(id) {
   if (!u) return;
   var depolar = dbGet('depolar') || [];
   if (!depolar.length) depolar = [{ id: 'ana', ad: 'Ana Depo' }];
-  var stoklar = u.stoklar || {};
-  var total = Number(u.stok)||0;
-  var rows = depolar.map(function(d){
-    var m = stoklar[d.id] != null ? Number(stoklar[d.id]) : (depolar.length===1 ? total : 0);
-    return '<tr><td>'+esc(d.ad)+'</td><td style="text-align:right">'+m+' Adet</td></tr>';
-  }).join('');
-  openModal('Tüm Stoklar',
-    '<table class="data"><thead><tr><th>Depo</th><th style="text-align:right">Miktar</th></tr></thead><tbody>'+rows+'</tbody></table>',
-    '<button type="button" class="btn btn-ghost" onclick="closeModal()">Kapat</button>');
+  var stoklar = u.stoklar || {}; // { depoId: n } veya { depoId: { varyantAd: n } }
+  var total = Number(u.stok) || 0;
+  var kombs = u.kombs || u.kombinasyonlar || u.varyantlar || [];
+  if (!Array.isArray(kombs)) kombs = [];
+
+  function miktarFor(depoId, varyantAd, varyantBarkod) {
+    var cell = stoklar[depoId];
+    if (cell != null && typeof cell === 'object') {
+      if (varyantAd && cell[varyantAd] != null) return Number(cell[varyantAd]) || 0;
+      if (varyantBarkod && cell[varyantBarkod] != null) return Number(cell[varyantBarkod]) || 0;
+      return 0;
+    }
+    if (varyantAd || varyantBarkod) {
+      // ürün.stoklar['varyantAd'] veya kombs[i].stok
+      if (varyantAd && stoklar[varyantAd] != null) return Number(stoklar[varyantAd]) || 0;
+      if (varyantBarkod && stoklar[varyantBarkod] != null) return Number(stoklar[varyantBarkod]) || 0;
+      return null; // bilinmiyor
+    }
+    if (cell != null) return Number(cell) || 0;
+    return depolar.length === 1 ? total : 0;
+  }
+
+  var bodyRows = '';
+  if (kombs.length) {
+    depolar.forEach(function(d) {
+      kombs.forEach(function(k, ki) {
+        var ad = String(k.ad || k.isim || k.name || ('Varyant ' + (ki + 1))).trim();
+        var m = null;
+        if (k.stok != null && depolar.length === 1) m = Number(k.stok) || 0;
+        if (m == null) m = miktarFor(d.id, ad, k.barkod);
+        if (m == null) m = (k.stok != null ? Number(k.stok) : 0) || 0;
+        // Sadece stok > 0 veya hepsini göster (BizimHesap hepsini gösterir)
+        bodyRows += '<tr>' +
+          '<td style="color:#64748b;white-space:nowrap">' + esc(d.ad || 'Ana Depo') + '</td>' +
+          '<td style="color:#0d9488;font-weight:600">' + esc(ad) + '</td>' +
+          '<td style="text-align:right;white-space:nowrap">' + m + ' Adet</td>' +
+          '</tr>';
+      });
+    });
+  } else {
+    depolar.forEach(function(d) {
+      var m = miktarFor(d.id, null, null);
+      if (m == null) m = 0;
+      bodyRows += '<tr>' +
+        '<td style="color:#64748b">' + esc(d.ad || 'Ana Depo') + '</td>' +
+        '<td style="color:#94a3b8">—</td>' +
+        '<td style="text-align:right">' + m + ' Adet</td></tr>';
+    });
+  }
+  if (!bodyRows) {
+    bodyRows = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:16px">Stok kaydı yok</td></tr>';
+  }
+
+  var html =
+    '<div class="ym-stok-modal">' +
+    '<table class="ym-stok-tbl"><thead><tr>' +
+    '<th>Depo</th><th></th><th style="text-align:right">Miktar</th>' +
+    '</tr></thead><tbody>' + bodyRows + '</tbody></table></div>';
+
+  openModal('Tüm Stoklar', html, '<button type="button" class="btn btn-ghost" onclick="closeModal()">Kapat</button>');
+  // Başlığı mint yeşil yap (BizimHesap stili)
+  try {
+    var mh = document.querySelector('#modalRoot .modal-h');
+    if (mh) {
+      mh.style.background = '#5eead4';
+      mh.style.color = '#0f766e';
+      mh.style.borderRadius = '10px 10px 0 0';
+      mh.style.fontWeight = '700';
+    }
+  } catch (e) {}
 };
 
 window.openManuelStokModal = function(id) {
