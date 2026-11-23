@@ -2577,7 +2577,7 @@ html body .hm-top{display:flex;justify-content:space-between;align-items:flex-st
 .hm-date{font-size:26px;font-weight:300;color:#444;line-height:1.2}
 .hm-kur{display:flex;gap:6px;margin-top:6px}.hm-kur span{color:#fff;font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:2px}
 .hm-kur .usd{background:#337ab7}.hm-kur .eur{background:#d9534f}
-.hm-mini{display:flex;gap:10px}.hm-mini>div{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.18);padding:12px 14px;min-width:132px}
+.hm-mini-click:hover{opacity:.85}.hm-mini-click small{color:#0d9488}.hm-mini{display:flex;gap:10px}.hm-mini>div{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.18);padding:12px 14px;min-width:132px}
 .hm-mini small{display:block;font-size:11.5px;font-weight:700;color:#333}.hm-mini span{display:block;font-size:12px;color:#777;margin-top:10px}
 .hm-banner{display:flex;align-items:center;gap:12px;background:#fdf6e3;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#444}
 .hm-banner i{width:18px;height:18px;border-radius:50%;background:#f0ad4e;flex:0 0 18px;position:relative}.hm-banner i::after{content:"!";position:absolute;inset:0;color:#fff;font:700 12px/18px sans-serif;text-align:center}
@@ -5841,6 +5841,7 @@ window.toggleMobileMenu = function() {
 };
 
 var TITLES = {
+  bugunSatislar: 'Bugünkü Satışlar', bugunTahsilatlar: 'Bugünkü Tahsilat',
   home: 'Ana Sayfa',
   takvim: 'Takvim', musteriler: 'Müşteriler', tedarikciler: 'Tedarikçiler',
   urunler: 'Ürünler', depolar: 'Depolar', varyantlar: 'Varyantlar', stok: 'Stok Ekstresi', ozelfiyat: 'Özel Fiyat Listesi',
@@ -7085,6 +7086,232 @@ window.pages.takvim = function(){
 // boot top day number
 try{ setTimeout(function(){ try{ if(typeof calUpdateTop==="function") calUpdateTop(); }catch(e){} }, 120); }catch(e){}
 
+
+
+pages.bugunTahsilatlar = function() {
+  var today = todayISO();
+  var rowsData = [];
+
+  // 1) odemeler koleksiyonu
+  try {
+    (dbGet('odemeler') || []).forEach(function(o) {
+      if (!o) return;
+      var d = String(o.tarih || o.created || '').slice(0, 10);
+      if (d !== today) return;
+      var tip = o.tip || o.yontem || o.tur || 'Tahsilat';
+      // tip normalize
+      var tipL = String(tip).toLowerCase();
+      var isTahsil = /tahsil|giris|alacak|nakit tahsil/i.test(tipL) || tip === 'tahsilat';
+      var isOdeme = /odeme|ödeme|cikis|borc|borç/i.test(tipL) || tip === 'odeme' || tip === 'ödeme';
+      if (!isTahsil && !isOdeme) {
+        // cariType'a göre: müşteriden gelen genelde tahsilat
+        if (o.cariType === 'tedarikci') isOdeme = true;
+        else isTahsil = true;
+      }
+      var cari = null;
+      try {
+        var key = o.cariType === 'tedarikci' ? 'tedarikciler' : 'musteriler';
+        cari = (dbGet(key) || []).find(function(x){ return String(x.id) === String(o.cariId); });
+      } catch (e) {}
+      var tutar = Number(o.tutar) || 0;
+      rowsData.push({
+        tarih: o.tarih || o.created,
+        tip: isOdeme ? 'Ödeme' : 'Tahsilat',
+        kullanici: o.kullanici || o.userName || (state.user && (state.user.name || state.user.email)) || '—',
+        kod: (cari && (cari.kod || cari.musteriNo)) || o.cariKod || '—',
+        hesap: o.hesapAd || o.hesap || ((dbGet('hesaplar')||[]).find(function(h){return h.id===o.hesapId;})||{}).ad || '—',
+        vkn: (cari && (cari.vkn || cari.tckn || cari.vergiNo)) || o.vkn || '—',
+        aciklama: o.aciklama || o.not || (cari && (cari.unvan || cari.ad)) || '—',
+        borc: isOdeme ? tutar : 0,
+        alacak: isTahsil ? tutar : 0
+      });
+    });
+  } catch (e) {}
+
+  // 2) Satışlardaki aynı gün tahsilat / ödemeler
+  try {
+    (dbGet('satislar') || []).forEach(function(s) {
+      if (!s || s.durum === 'iptal') return;
+      var odemeler = Array.isArray(s.odemeler) ? s.odemeler : [];
+      // belge bugün ödendiyse ve odemeler yoksa tahsil olarak ekle
+      if (!odemeler.length && (s.odendi || s.durum === 'odendi')) {
+        var d0 = String(s.tarih || s.created || '').slice(0, 10);
+        if (d0 === today) {
+          var tut = Number(s.tahsil) || Number(s.tutar) || 0;
+          if (tut > 0) {
+            odemeler = [{ tarih: s.tarih || s.created, tutar: tut, yontem: s.odemeSekli || 'Nakit', hesapId: s.tahsilHesap || s.hesapId }];
+          }
+        }
+      }
+      odemeler.forEach(function(od) {
+        var d = String(od.tarih || od.created || s.tarih || '').slice(0, 10);
+        if (d !== today) return;
+        var tutar = Number(od.tutar) || 0;
+        if (tutar <= 0) return;
+        var m = null;
+        try {
+          m = (dbGet('musteriler') || []).find(function(x){ return String(x.id) === String(s.musteriId || s.cariId); });
+        } catch (e) {}
+        rowsData.push({
+          tarih: od.tarih || s.tarih || s.created,
+          tip: 'Tahsilat',
+          kullanici: od.kullanici || s.kullanici || (state.user && (state.user.name || state.user.email)) || '—',
+          kod: (m && (m.kod || m.musteriNo)) || '—',
+          hesap: od.hesapAd || ((dbGet('hesaplar')||[]).find(function(h){return h.id===(od.hesapId||s.tahsilHesap);})||{}).ad || od.yontem || '—',
+          vkn: (m && (m.vkn || m.tckn || m.vergiNo)) || '—',
+          aciklama: (s.no ? ('Satış ' + s.no + ' · ') : '') + (s.musteri || s.musteriAd || (m && (m.unvan||m.ad)) || 'Tahsilat'),
+          borc: 0,
+          alacak: tutar
+        });
+      });
+    });
+  } catch (e) {}
+
+  // 3) Hesap hareketleri — Tahsilat / Ödeme işaretliler
+  try {
+    (dbGet('hesapHareket') || []).forEach(function(h) {
+      if (!h) return;
+      var d = String(h.tarih || h.created || '').slice(0, 10);
+      if (d !== today) return;
+      var islem = String(h.islem || h.aciklama || '');
+      if (!/tahsil|ödeme|odeme|gelir|masraf/i.test(islem)) return;
+      var alacak = Number(h.alacak) || 0;
+      var borc = Number(h.borc) || 0;
+      if (alacak < 0.01 && borc < 0.01) return;
+      rowsData.push({
+        tarih: h.tarih || h.created,
+        tip: alacak > 0 ? 'Tahsilat' : 'Ödeme',
+        kullanici: h.kullanici || (state.user && (state.user.name || state.user.email)) || '—',
+        kod: '—',
+        hesap: ((dbGet('hesaplar')||[]).find(function(x){return x.id===h.hesapId;})||{}).ad || '—',
+        vkn: '—',
+        aciklama: h.aciklama || h.islem || '—',
+        borc: borc,
+        alacak: alacak
+      });
+    });
+  } catch (e) {}
+
+  // sırala yeni üstte
+  rowsData.sort(function(a, b) {
+    return String(b.tarih || '').localeCompare(String(a.tarih || ''));
+  });
+
+  var rows = rowsData.map(function(r) {
+    return [
+      fmtDate(r.tarih),
+      esc(r.tip),
+      esc(r.kullanici),
+      esc(r.kod),
+      esc(r.hesap),
+      esc(r.vkn),
+      esc(r.aciklama),
+      r.borc > 0 ? fmtMoney(r.borc) : '—',
+      r.alacak > 0 ? ('<span style="color:#16a34a;font-weight:700">' + fmtMoney(r.alacak) + '</span>') : '—'
+    ];
+  });
+
+  var topAlacak = rowsData.reduce(function(a, r){ return a + (Number(r.alacak)||0); }, 0);
+  var topBorc = rowsData.reduce(function(a, r){ return a + (Number(r.borc)||0); }, 0);
+
+  var headers = ['Tarih', 'Tipi', 'Kullanıcı', 'Kod', 'Hesap', 'Vergi/TCKN', 'Açıklama', 'Borç', 'Alacak'];
+
+  return '<div class="toolbar">' +
+    '<button type="button" class="btn btn-ghost" onclick="go(\'home\')">← Ana Sayfa</button> ' +
+    '<span style="margin-left:12px;font-weight:700;color:#0f172a">Bugün: ' + esc(fmtDate(today)) +
+    ' · ' + rowsData.length + ' hareket · Alacak ' + fmtMoney(topAlacak) +
+    (topBorc > 0 ? (' · Borç ' + fmtMoney(topBorc)) : '') + '</span>' +
+    '</div>' +
+    '<div style="overflow:auto;max-width:100%;border:1px solid #e2e8f0;border-radius:10px;background:#fff">' +
+    tableHTML(headers, rows) +
+    '</div>' +
+    (rowsData.length ? '' : '<p class="muted" style="margin-top:16px;text-align:center">Bugün henüz tahsilat/ödeme yok.</p>');
+};
+
+pages.bugunSatislar = function() {
+  var today = todayISO();
+  var list = (dbGet('satislar') || []).filter(function(s) {
+    if (!s || s.durum === 'iptal') return false;
+    var d = String(s.tarih || s.created || '').slice(0, 10);
+    return d === today;
+  }).slice().reverse();
+
+  function musteriBilgi(s) {
+    var mid = s.musteriId || s.cariId || '';
+    var m = null;
+    if (mid && mid !== 'perakende') {
+      m = (dbGet('musteriler') || []).find(function(x){ return String(x.id) === String(mid); });
+    }
+    return m || {};
+  }
+
+  var rows = list.map(function(s) {
+    var m = musteriBilgi(s);
+    var kalemler = s.kalemler || s.lines || s.urunler || [];
+    var alisTop = 0;
+    var markalar = [];
+    kalemler.forEach(function(l) {
+      var adet = Number(l.miktar || l.adet) || 0;
+      var af = Number(l.alisFiyat || l.alis || 0) || 0;
+      alisTop += af * adet;
+      if (l.marka) markalar.push(l.marka);
+    });
+    var tutar = Number(s.tutar) || Number(s.genelToplam) || 0;
+    var indirim = Number(s.indirim) || Number(s.iskonto) || 0;
+    var kdv = Number(s.kdv) || Number(s.kdvToplam) || 0;
+    var net = Number(s.net) || (tutar - kdv);
+    if (!isFinite(net)) net = tutar;
+    var durum = s.durumLabel || s.durum || (s.odendi ? 'Ödendi' : 'Açık');
+    var kullanici = s.kullanici || s.userName || s.createdBy || (state.user && (state.user.name || state.user.email)) || '—';
+    return [
+      esc(kullanici),
+      esc(durum),
+      esc(s.no || s.belgeNo || '—'),
+      fmtDate(s.tarih || s.created),
+      fmtDate(s.siparisTarih || s.siparisTarihi || '—'),
+      fmtDate(s.vade || '—'),
+      fmtDate(s.sevk || s.sevkTarih || '—'),
+      esc(s.depo || s.depoAd || '—'),
+      esc(m.kod || m.musteriNo || s.musteriKod || '—'),
+      esc(s.musteri || s.musteriAd || s.cari || m.unvan || m.ad || 'Perakende'),
+      esc(m.email || m.eposta || s.email || '—'),
+      esc(m.telefon || m.tel || s.telefon || '—'),
+      esc(m.adres || s.adres || '—'),
+      esc(s.sevkAdres || m.sevkAdres || '—'),
+      esc(m.vkn || m.tckn || m.vergiNo || s.vergiNo || '—'),
+      esc(s.aciklama || s.not || '—'),
+      esc(s.sinif1 || m.sinif1 || '—'),
+      esc(s.sinif2 || m.sinif2 || '—'),
+      esc(markalar.filter(Boolean).join(', ') || s.marka || '—'),
+      esc(s.kur || s.dovizKur || '1'),
+      fmtMoney(alisTop),
+      fmtMoney(tutar + indirim),
+      fmtMoney(indirim),
+      fmtMoney(net),
+      fmtMoney(kdv),
+      '<strong>' + fmtMoney(tutar) + '</strong>'
+    ];
+  });
+
+  var headers = [
+    'Kullanıcı','Durum','Belge No','Tarih','Sipariş Tarihi','Vade','Sevk','Depo',
+    'Müşteri Kodu','Müşteri','E-Posta','Telefon','Adres','Sevk Adresi','Vergi No',
+    'Not','Sınıf1','Sınıf2','Marka','Kur','Alış Fiyatı','Tutar','İndirim','Net','KDV','TOPLAM'
+  ];
+
+  var toplam = list.reduce(function(a, s){ return a + (Number(s.tutar) || Number(s.genelToplam) || 0); }, 0);
+
+  return '<div class="toolbar">' +
+    '<button type="button" class="btn btn-ghost" onclick="go(\'home\')">← Ana Sayfa</button> ' +
+    '<button type="button" class="btn btn-lime" onclick="go(\'satislar\')">Tüm Satışlar</button> ' +
+    '<span style="margin-left:12px;font-weight:700;color:#0f172a">Bugün: ' + esc(fmtDate(today)) + ' · ' + list.length + ' belge · Toplam ' + fmtMoney(toplam) + '</span>' +
+    '</div>' +
+    '<div style="overflow:auto;max-width:100%;border:1px solid #e2e8f0;border-radius:10px;background:#fff">' +
+    tableHTML(headers, rows) +
+    '</div>' +
+    (list.length ? '' : '<p class="muted" style="margin-top:16px;text-align:center">Bugün henüz satış yok.</p>');
+};
+
 pages.home = function() {
   try { setTimeout(ymShowPendingMukDavet, 400); try{ setTimeout(ymShowPendingUserDavet, 500); }catch(e){}; } catch (e) {}
   var _c = document.getElementById('content'), _prev = _c ? _c.querySelectorAll('.hm-flip') : [];
@@ -7288,7 +7515,7 @@ pages.home = function() {
   var bar = function(w, c) { return '<div class="bar"><i style="width:' + Math.min(100, w) + '%;background:' + c + ';"></i></div>'; };
   return demoBanner +
     '<div class="hm-top"><div><div class="hm-date">' + dateStr + '</div><div class="hm-kur"><span class="usd" id="hm_usd">$ …</span><span class="eur" id="hm_eur">€ …</span></div></div>' +
-    '<div class="hm-mini"><div><small>BUGÜNKÜ SATIŞ</small><span>' + fmtMoney(bugunSatis) + '</span></div><div><small>BUGÜNKÜ TAHSİLAT</small><span>' + fmtMoney(bugunTahsil) + '</span></div></div></div>' +
+    '<div class="hm-mini"><div class="hm-mini-click" onclick="go(\'bugunSatislar\')" title="Bugünkü satışları gör" style="cursor:pointer"><small>BUGÜNKÜ SATIŞ</small><span>' + fmtMoney(bugunSatis) + '</span></div><div class="hm-mini-click" style="cursor:pointer" onclick="go(\'bugunTahsilatlar\')" title="Bugünkü tahsilat listesi"><small>BUGÜNKÜ TAHSİLAT</small><span>' + fmtMoney(bugunTahsil) + '</span></div></div></div>' +
     bannerHtml + welcome +
     '<div class="hm-stats">' +
       hmFlip('s1', icon('chart'), fmtMoney(ciro), months[month] + ' Cirosu', fmtMoney(ciro30), 'Son 30 Gün Cirosu', 1, 0) +
