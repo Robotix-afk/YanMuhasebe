@@ -4625,11 +4625,11 @@ function ymDrawBarcode(el, code, opts) {
   try {
     JsBarcode(el, s, {
       format: fmt,
-      width: opts.width != null ? opts.width : 1.6,
-      height: opts.height != null ? opts.height : 48,
+      width: opts.width != null ? opts.width : (fmt.indexOf('EAN') === 0 ? 2.2 : 2),
+      height: opts.height != null ? opts.height : 64,
       displayValue: opts.displayValue !== false,
-      fontSize: opts.fontSize || 12,
-      margin: opts.margin != null ? opts.margin : 0,
+      fontSize: opts.fontSize || 13,
+      margin: opts.margin != null ? opts.margin : 6,
       textMargin: 2
     });
   } catch (e1) {
@@ -9921,7 +9921,7 @@ function urunDetail(id) {
     try {
       var el = document.getElementById('urunBarcodeSvg');
       if (el && barkod && typeof JsBarcode !== 'undefined') {
-        ymDrawBarcode(el, barkod, { width:1.6, height:48, fontSize:12 });
+        ymDrawBarcode(el, barkod, { width:2, height:64, fontSize:13 });
       }
     } catch (e) {}
   }, 40);
@@ -10122,7 +10122,7 @@ function urunSayimPage(id) {
     try {
       var el = document.getElementById('sayimBarcodeSvg');
       if (el && barkod && typeof JsBarcode !== 'undefined') {
-        ymDrawBarcode(el, barkod, { width:1.4, height:42, fontSize:11 });
+        ymDrawBarcode(el, barkod, { width:1.8, height:56, fontSize:12 });
       }
     } catch(e) {}
   }, 40);
@@ -12115,7 +12115,7 @@ window.doAlisEtiketYazdir = function(id) {
   var total = 0;
   jobs.forEach(function(j){
     var bcImg = '';
-    try { bcImg = drawCode128('data', j.bc, { width: 420, height: 90 }); } catch(e) {}
+    try { bcImg = drawCode128('data', j.bc, { width: 480, height: 110, barWidth: 2.4 }); } catch(e) {}
     var data = {
       ad: j.ad, varyant: j.varyant || '', kod: j.kod, marka: j.marka, bc: j.bc, bcImg: bcImg,
       fiyatStr: (typeof fmtMoney==='function' ? fmtMoney(j.fiyat) : (Number(j.fiyat).toFixed(2)+' TL')),
@@ -18868,7 +18868,7 @@ window.doEtiketYazdir = function(id) {
   closeModal();
 
   var bcImg = '';
-  try { bcImg = drawCode128('data', bc, { width: 420, height: 90 }); } catch(e) {}
+  try { bcImg = drawCode128('data', bc, { width: 480, height: 110, barWidth: 2.4 }); } catch(e) {}
   var data = {
     ad: ad, varyant: varyant, kod: kod, marka: marka, bc: bc, bcImg: bcImg,
     fiyatStr: (typeof fmtMoney==='function' ? fmtMoney(fiyat) : (Number(fiyat).toFixed(2)+' TL')),
@@ -18939,12 +18939,19 @@ window.drawCode128 = function(target, code, opts) {
     try {
       var fmt = (typeof ymBarkodFormat === 'function') ? ymBarkodFormat(code) : 'CODE128';
       var canvasJ = document.createElement('canvas');
+      // width = tek çubuk modülü (px); toplam genişlik değil — kısa/ezik barkodu önler
+      var barW = opts.barWidth;
+      if (barW == null) {
+        if (fmt.indexOf('EAN') === 0) barW = Math.max(2.0, Math.min(2.8, w / 95));
+        else barW = Math.max(1.8, Math.min(2.6, w / Math.max(code.length * 11, 120)));
+      }
+      var barH = Math.max(h || 70, 64);
       JsBarcode(canvasJ, code, {
         format: fmt,
-        width: Math.max(1.2, (w / Math.max(code.length, 12)) * 0.9),
-        height: h,
+        width: barW,
+        height: barH,
         displayValue: false,
-        margin: 0,
+        margin: 10,
         background: '#ffffff',
         lineColor: '#000000'
       });
