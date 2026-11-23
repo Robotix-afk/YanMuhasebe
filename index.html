@@ -26,7 +26,7 @@
       'efatura':'e-fatura','e-fatura':'e-fatura',
       'hesaplar':'hesaplarim','hesaplarim':'hesaplarim',
       'banka-hareketleri':'bankaHareketleri','bankahareketleri':'bankaHareketleri','banka':'bankaHareketleri',
-      'calisanlar':'calisanlar','masraflar':'masraflar','gelirler','gelirKalemleri',
+      'calisanlar':'calisanlar','masraflar':'masraflar',
       'kredi':'krediler','krediler':'krediler',
       'raporlar':'raporlar','finansal-raporlar':'finansal-raporlar',
       'stok-raporlari':'stok-raporlari','musteri-listesi-rapor':'musteri-listesi-rapor',
@@ -5718,7 +5718,6 @@ var NAV = [
   { id: 'grp-nakit', label: 'Nakit Yönetimi', icon: 'wallet', children: [
     { id: 'hesaplar', label: 'Hesaplarım' },
     { id: 'masraflar', label: 'Masraflar' },
-    { id: 'gelirler', label: 'Gelirler' },
     { id: 'kredi', label: 'Krediler' },
     { id: 'demirbaslar', label: 'Demirbaşlar' },
     { id: 'calisanlar', label: 'Çalışanlar' },
@@ -5807,7 +5806,7 @@ function buildNav() {
   if (el) el.innerHTML = html;
   try {
     var openIds = {};
-    if (state.page === 'gelenEfaturalar' || state.page === 'olusturulanEfaturalar' || state.page === 'arsivlenenFaturalar' || state.page === 'efaturaKayit' || state.page === 'fatura' || state.page === 'gelenFaturalar' || state.page === 'hesaplar' || state.page === 'bankaHareketleri' || state.page === 'masraflar' || state.page === 'gelirler' || state.page === 'kredi' || state.page === 'demirbaslar' || state.page === 'calisanlar') openIds['grp-nakit'] = 1;
+    if (state.page === 'gelenEfaturalar' || state.page === 'olusturulanEfaturalar' || state.page === 'arsivlenenFaturalar' || state.page === 'efaturaKayit' || state.page === 'fatura' || state.page === 'gelenFaturalar' || state.page === 'hesaplar' || state.page === 'bankaHareketleri' || state.page === 'masraflar' || state.page === 'kredi' || state.page === 'demirbaslar' || state.page === 'calisanlar') openIds['grp-nakit'] = 1;
     Object.keys(openIds).forEach(function(gid) {
       var btn = el && el.querySelector('[data-group="' + gid + '"]');
       var sub = document.getElementById('sub-' + gid);
@@ -5846,7 +5845,7 @@ var TITLES = {
   takvim: 'Takvim', musteriler: 'Müşteriler', tedarikciler: 'Tedarikçiler',
   urunler: 'Ürünler', depolar: 'Depolar', varyantlar: 'Varyantlar', stok: 'Stok Ekstresi', ozelfiyat: 'Özel Fiyat Listesi',
   satislar: 'Satışlar', alislar: 'Alışlar', gelenEfaturalar:'Gelen E-Faturalar',efaturaKayit:'E-Fatura Kaydı', fatura: 'Faturalar', gelenEfaturalar: 'Gelen E-Faturalar', efaturaKayit: 'E-Fatura Kaydı', efatura: 'e-Fatura', destek: 'Yardım / Destek',
-  masraflar: 'Masraflar', gelirler: 'Gelirler', hesaplar: 'Hesaplarım', kredi: 'Krediler', demirbaslar: 'Demirbaşlar', calisanlar: 'Çalışanlar',
+  masraflar: 'Masraflar', hesaplar: 'Hesaplarım', kredi: 'Krediler', demirbaslar: 'Demirbaşlar', calisanlar: 'Çalışanlar',
   raporlar: 'Raporlar', profilim: 'Profilim', ayarlar: 'Ayarlar', kullanicilar: 'Kullanıcılar', tanimlar: 'Tanımlar',
   'fatura-ayar': 'YanMuhasebe Fatura', etiket: 'Etiket Şablonları',
   yanmali: 'YanMali — Mali Müşavir',
@@ -14249,7 +14248,7 @@ window.saveGelir = function() {
   }
   pushAct('Gelir kaydedildi: ' + fmtMoney(tutar));
   state._view = {};
-  go('gelirler');
+  go('masraflar');
   toast('Gelir kaydedildi');
 };
 window.deleteGelir = function(id) {
@@ -14267,7 +14266,7 @@ window.deleteGelir = function(id) {
       } catch (e) {}
     }
     dbSet('gelirler', list.filter(function(x){ return x.id !== id; }));
-    go('gelirler');
+    go('masraflar');
     toast('Silindi');
   });
 };
@@ -14297,13 +14296,13 @@ window.addGelirKalem = function() {
   list.push({ id: uid('gk'), ad: ad, ust: ust });
   dbSet('gelirKalemleri', list);
   state._view = { kalemler: true };
-  go('gelirler');
+  go('masraflar');
   toast('Kalem eklendi');
 };
 window.deleteGelirKalem = function(id) {
   dbSet('gelirKalemleri', (dbGet('gelirKalemleri')||[]).filter(function(x){ return x.id !== id; }));
   state._view = { kalemler: true };
-  go('gelirler');
+  go('masraflar');
 };
 
 pages.masraflar = function() {
@@ -15175,16 +15174,53 @@ document.addEventListener('keydown', function(e){
 function ymBildirimReadMap() {
   try { return JSON.parse(localStorage.getItem('ym_bildirim_ok') || '{}') || {}; } catch (e) { return {}; }
 }
-function ymBildirimSetRead(id) {
+function ymBildirimSilMap() {
+  try { return JSON.parse(localStorage.getItem('ym_bildirim_sil') || '{}') || {}; } catch (e) { return {}; }
+}
+function ymBugunISO() {
+  var n = new Date();
+  return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0');
+}
+/** recurring=true: bugün okunduysa okundu; ertesi gün tekrar okunmamış */
+function ymBildirimIsUnread(id, recurring) {
+  try {
+    if (ymBildirimSilMap()[id]) return false;
+  } catch (e) {}
   var m = ymBildirimReadMap();
-  m[id] = true;
+  var v = m[id];
+  if (!v) return true;
+  if (recurring) {
+    var gun = (typeof v === 'string' && v.length >= 10) ? String(v).slice(0, 10) : null;
+    if (gun && gun === ymBugunISO()) return false;
+    if (v === true) return true; // eski format: yeni günde tekrar
+    return gun !== ymBugunISO();
+  }
+  return false;
+}
+function ymBildirimSetRead(id, recurring) {
+  if (!id) return;
+  var m = ymBildirimReadMap();
+  m[id] = recurring ? ymBugunISO() : true;
   try { localStorage.setItem('ym_bildirim_ok', JSON.stringify(m)); } catch (e) {}
 }
+window.ymBildirimSil = function(id, ev) {
+  if (ev) { try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {} }
+  if (!id) return;
+  var m = ymBildirimSilMap();
+  m[id] = true;
+  try { localStorage.setItem('ym_bildirim_sil', JSON.stringify(m)); } catch (e) {}
+  try {
+    var r = ymBildirimReadMap();
+    delete r[id];
+    localStorage.setItem('ym_bildirim_ok', JSON.stringify(r));
+  } catch (e) {}
+  try { ymBildirimUIYenile(); } catch (e) {}
+  try { toast('Bildirim silindi'); } catch (e) {}
+};
 function ymBildirimOkunduHepsi() {
   var list = ymToplaBildirimler();
-  var today = ymBugunISO();
   list.forEach(function(b){
-    if (b && b.id) ymBildirimSetRead(b.id, true); // günlük: yarın vade sürüyorsa tekrar gelir
+    if (b && b.id) ymBildirimSetRead(b.id, true);
   });
   window.__ymBildirimLast = ymToplaBildirimler();
   ymBildirimUIYenile();
@@ -15223,7 +15259,7 @@ function ymToplaBildirimler() {
         mesaj: 'Sn. ' + uName + ' bey yapmış olduğunuz satışın tahsilat vadesi geçmiştir. Müşteriniz olan ' + musteri + (s.no ? ' (Belge: ' + s.no + ')' : '') + '.',
         ozet: 'Sn. ' + uName + ' bey yapmış olduğunuz satışın tahsilat vadesi geçmiştir. Müşteriniz olan ' + musteri + '…',
         tarih: vade,
-        unread: !read[id],
+        unread: ymBildirimIsUnread(id, true),
         action: function() {
           try {
             if (s.musteriId) { state._view = { detail: s.musteriId }; go('musteriler'); }
@@ -15251,7 +15287,7 @@ function ymToplaBildirimler() {
         mesaj: 'Tedarikçi ' + ted + ' için alış ödemesi vadesi geçmiştir' + (a.no ? ' (Belge: ' + a.no + ')' : '') + '.',
         ozet: 'Tedarikçi ' + ted + ' için alış ödemesi vadesi geçmiştir…',
         tarih: vade,
-        unread: !read[id],
+        unread: ymBildirimIsUnread(id, true),
         action: function() {
           try {
             if (a.tedarikciId) { state._view = { detail: a.tedarikciId }; go('tedarikciler'); }
@@ -15274,7 +15310,7 @@ function ymToplaBildirimler() {
         mesaj: h.mesaj || h.aciklama || h.not || 'Hatırlatmanız var.',
         ozet: (h.mesaj || h.aciklama || h.baslik || 'Hatırlatma').slice(0, 90) + '…',
         tarih: h.tarih || h.vade || h.created,
-        unread: !read[id],
+        unread: ymBildirimIsUnread(id, true),
         action: function() { try { go('takvim'); } catch (e) {} }
       });
     });
@@ -15298,7 +15334,7 @@ function ymToplaBildirimler() {
         mesaj: h.not || h.aciklama || h.baslik || 'Takvim kaydı',
         ozet: String(h.not || h.baslik || 'Takvim').slice(0, 90),
         tarih: h.tarih || h.created,
-        unread: !read[id],
+        unread: ymBildirimIsUnread(id, true),
         action: function() { go('takvim'); }
       });
     });
@@ -15315,7 +15351,7 @@ function ymToplaBildirimler() {
         mesaj: 'YanMuhasebe 26.11.2031 tarihine kadar ücretsizdir. Bilgilendirme bildirimi.',
         ozet: 'Abonelik / ücretsiz kullanım bilgilendirmesi…',
         tarih: new Date().toISOString().slice(0, 10),
-        unread: !read[id],
+        unread: ymBildirimIsUnread(id, true),
         action: function() { try { go('profilim'); } catch (e) {} }
       });
     }
@@ -21681,7 +21717,6 @@ NAV.length=0;
    {id:'hesaplar',label:'Hesaplarım'},
    {id:'calisanlar',label:'Çalışanlar'},
    {id:'masraflar',label:'Masraflar'},
-   {id:'gelirler',label:'Gelirler'},
    {id:'kredi',label:'Krediler'},
    {id:'demirbaslar',label:'Demirbaşlar'},
    {id:'gelenEfaturalar',label:'Gelen E-Faturalar'},
