@@ -4441,11 +4441,75 @@ function cloudPullAll() {
   });
 }
 
+
+/** Başka cihaz: kabul edilmiş davetten admin workspace bağını yükle */
+function ymRestoreWorkspaceFromCloud(user) {
+  if (!user || !user.email) return Promise.resolve(user);
+  // Zaten bağlıysa koru
+  if (user.wsOwner && String(user.wsOwner).indexOf('@') > 0) return Promise.resolve(user);
+  var em = String(user.email).toLowerCase();
+  var no = String(user.musteriNo || user.musteri_no || '');
+  var hdr = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+  var qs = [];
+  qs.push(fetch(SB_URL + 'user_invites?status=eq.accepted&answer_email=eq.' + encodeURIComponent(em) + '&select=*&order=answered_at.desc&limit=3', { headers: hdr }).then(function(r){ return r.ok ? r.json() : []; }).catch(function(){ return []; }));
+  qs.push(fetch(SB_URL + 'user_invites?status=eq.accepted&to_email=eq.' + encodeURIComponent(em) + '&select=*&order=created_at.desc&limit=3', { headers: hdr }).then(function(r){ return r.ok ? r.json() : []; }).catch(function(){ return []; }));
+  if (no) qs.push(fetch(SB_URL + 'user_invites?status=eq.accepted&to_no=eq.' + encodeURIComponent(no) + '&select=*&order=created_at.desc&limit=3', { headers: hdr }).then(function(r){ return r.ok ? r.json() : []; }).catch(function(){ return []; }));
+  return Promise.all(qs).then(function(arr) {
+    var all = [];
+    arr.forEach(function(a){ if (Array.isArray(a)) all = all.concat(a); });
+    all.sort(function(a, b) {
+      return String(b.answered_at || b.created_at || '').localeCompare(String(a.answered_at || a.created_at || ''));
+    });
+    var inv = null;
+    for (var i = 0; i < all.length; i++) {
+      var fe = String(all[i].from_email || all[i].fromEmail || '').toLowerCase();
+      if (fe && fe !== em) { inv = all[i]; break; }
+    }
+    if (!inv) return user;
+    var owner = String(inv.from_email || inv.fromEmail || '').toLowerCase();
+    user.wsOwner = owner;
+    user.wsOwnerNo = String(inv.from_no || inv.fromNo || '');
+    user.wsOwnerName = inv.from_name || inv.fromName || owner;
+    user.wsInvId = inv.id;
+    try {
+      if (typeof setMember === 'function') setMember({ id: inv.id, fromEmail: owner, fromNo: user.wsOwnerNo, fromName: user.wsOwnerName });
+      else if (typeof saveUser === 'function') saveUser(user);
+      else if (typeof persist === 'function') persist(user);
+    } catch (e) {}
+    try { if (typeof clearUserKeyCache === 'function') clearUserKeyCache(); } catch (e) {}
+    return user;
+  }).catch(function(){ return user; });
+}
+function ymAllMenuIds() {
+  try {
+    if (typeof menuList === 'function') {
+      var ids = menuList().map(function(m){ return m.id; }).filter(Boolean);
+      if (ids.length) return ids;
+    }
+  } catch (e) {}
+  return ['home','musteriler','tedarikciler','urunler','satislar','alislar','hesaplar','masraflar','raporlar','ayarlar','kullanicilar','depolar','varyantlar','kredi','demirbaslar','calisanlar','etiket','takvim','bankaHareketleri'];
+}
+
 function cloudSyncAfterLogin(user) {
   if (!user || !user.email) {
     console.warn('Bulut: e-posta yok');
     return Promise.resolve();
   }
+  // Önce davet/workspace bağını bul (başka cihaz + ekip üyesi)
+  return ymRestoreWorkspaceFromCloud(user).then(function(u2) {
+    if (u2) user = u2;
+    if (state.user && user) {
+      if (user.wsOwner) state.user.wsOwner = user.wsOwner;
+      if (user.wsOwnerNo) state.user.wsOwnerNo = user.wsOwnerNo;
+      if (user.wsOwnerName) state.user.wsOwnerName = user.wsOwnerName;
+      if (user.wsInvId) state.user.wsInvId = user.wsInvId;
+    }
+    try { if (typeof clearUserKeyCache === 'function') clearUserKeyCache(); } catch (e) {}
+    return ymCloudSyncAfterLoginCore(user);
+  });
+}
+function ymCloudSyncAfterLoginCore(user) {
+  if (!user || !user.email) return Promise.resolve();
   var email = String(user.wsOwner || user.email).toLowerCase();
   // Abonelik bayraklarını app_customers'tan çek
   var flagsP = fetch(SB_URL + 'app_customers?email=eq.' + encodeURIComponent(email) + '&select=unlimited,subscribed,subscription_end,plan,blocked,trial_start,musteri_no', {
@@ -5698,6 +5762,26 @@ function enterApp() {
   } catch (e) {}
 }
 
+
+(function ymCloudLiveSync(){
+  var tick = function(){
+    try {
+      if (!state.user || state.user.isDemo) return;
+      if (typeof cloudPullAll !== 'function') return;
+      if (document.visibilityState === 'hidden') return;
+      cloudPullAll().then(function(res){
+        if (res && res.changed) {
+          try { if (state.page) go(state.page); } catch(e){}
+        }
+      });
+    } catch(e){}
+  };
+  setInterval(tick, 45000);
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible') tick();
+  });
+})();
+
 /* ========== NAV ========== */
 var NAV = [
   { id: 'home', label: 'Ana Sayfa', icon: 'home' },
@@ -6222,7 +6306,9 @@ function menuList(){
 function pageOk(p){
   if(!isMember()||ALWAYS[p])return true;
   if(PAGE_PERM[p]&&!can(PAGE_PERM[p]))return false;
-  var r=myRec();if(!r||!r.menus)return true;
+  var r=myRec();
+  // Kayıt yok veya menü tanımlanmamış / boş / * → admin gibi tam yetki
+  if(!r||!r.menus||!r.menus.length||r.menus.indexOf('*')>=0||r.fullAccess)return true;
   var known=menuList().some(function(m){return m.id===p;});
   return !known||r.menus.indexOf(p)>=0;
 }
@@ -6270,8 +6356,22 @@ function persist(u){
 }
 function setMember(inv){
   var u=state.user;if(!u)return;
-  u.wsOwner=String(inv.fromEmail||'').toLowerCase();u.wsOwnerNo=String(inv.fromNo||'');
-  u.wsOwnerName=inv.fromName||'';u.wsInvId=inv.id;persist(u);
+  u.wsOwner=String(inv.fromEmail||inv.from_email||'').toLowerCase();
+  u.wsOwnerNo=String(inv.fromNo||inv.from_no||'');
+  u.wsOwnerName=inv.fromName||inv.from_name||'';
+  u.wsInvId=inv.id;
+  try{ if(typeof clearUserKeyCache==='function') clearUserKeyCache(); }catch(e){}
+  persist(u);
+  // Admin verisini hemen çek
+  try {
+    setTimeout(function(){
+      if (typeof cloudPullAll === 'function') {
+        cloudPullAll().then(function(){
+          try { if (state.page) go(state.page); else go('home'); } catch(e){}
+        });
+      }
+    }, 400);
+  } catch(e){}
 }
 function clearMember(){
   var u=state.user;if(!u)return;
@@ -6593,7 +6693,8 @@ window.kfKaydet = function(){
     var inv={ id:uid('dv'), toNo:no, toEmail:String(tg.email||'').toLowerCase(), toName:tg.name||f.name||'', fromNo:c.no, fromName:c.name, fromEmail:c.email, status:'pending', tarih:(typeof todayISO==='function'?todayISO():new Date().toISOString().slice(0,10)), created:new Date().toISOString() };
     list.push(inv); ymUserInvitesWrite(list);
     var team=teamRecs();
-    team.push({ id:uid('ek'), inviteId:inv.id, toNo:no, name:f.name||inv.toName, photo:f.photo||'', menus:f.menus, perms:f.perms, visibility:f.visibility||{}, created:inv.created });
+    var _menus = (f.menus && f.menus.length) ? f.menus : (typeof ymAllMenuIds==='function' ? ymAllMenuIds() : []);
+    team.push({ id:uid('ek'), inviteId:inv.id, toNo:no, name:f.name||inv.toName, photo:f.photo||'', menus:_menus, perms:f.perms||{all:true}, visibility:f.visibility||{}, fullAccess: !f.menus || !f.menus.length, created:inv.created });
     saveTeam(team);
     return ymInvUpsertCloud(inv).then(function(ok){
       try{ pushAct('Kullanıcı daveti: '+no); }catch(e){}
@@ -20767,7 +20868,11 @@ function authRemoteLogin(id, pass, ok, fail) {
           users.push(u);
         } else { u.pass = pass; u.authSynced = true; u.passUpgraded = true; }
         writeUsers(users);
-        setTimeout(function() { ok(u); }, 0);
+        // Workspace bağını yükle (davetli kullanıcı başka cihazda)
+        var done = function(uu){ setTimeout(function(){ ok(uu || u); }, 0); };
+        if (typeof ymRestoreWorkspaceFromCloud === 'function') {
+          ymRestoreWorkspaceFromCloud(u).then(done).catch(function(){ done(u); });
+        } else done(u);
       });
   }).catch(function() {
     try { window.__ymLastAuthErr = lastErr; } catch (e) {}
