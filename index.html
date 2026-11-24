@@ -3932,6 +3932,54 @@ function uid(p) { return (p||'id') + '_' + Date.now().toString(36) + Math.random
 
 /* ========== BULUT SENKRON (web <-> mobil, ym_data) ========== */
 var CLOUD_COLLS = ['yanmaliDavetler','ekipUyeler','musteriler','tedarikciler','urunler','satislar','alislar','masraflar','odemeler','hesaplar','calisanlar','depolar','varyantlar','krediler','demirbaslar','faturalar','gelenFaturalar','ozelFiyatlar','stokHareket','hesapHareket','masrafKalemleri','ayarlar','etiketSablon','etiketSablonlari','aktivite','hatirlatmalar','notlar','mobilFaturalar','hesapHareketleri','calisanHareketleri','bankaHesaplari','bankaHareketleri'];
+
+function cloudYmDataReadPack(email) {
+  email = String(email || '').toLowerCase();
+  if (!email) return Promise.resolve({});
+  return fetch(SB_URL + 'ym_data?user_id=eq.' + encodeURIComponent(email) + '&select=coll,items,updated_at', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  }).then(function(r){ return r.ok ? r.json() : []; }).then(function(rows){
+    var pack = {};
+    (rows || []).forEach(function(row){
+      if (row && row.coll) pack[row.coll] = Array.isArray(row.items) ? row.items : [];
+    });
+    return pack;
+  }).catch(function(){ return {}; });
+}
+function cloudYmDataWritePack(email, pack) {
+  email = String(email || '').toLowerCase();
+  if (!email || !pack) return Promise.resolve(false);
+  var jobs = [];
+  (CLOUD_COLLS || []).forEach(function(coll){
+    if (!Array.isArray(pack[coll])) return;
+    jobs.push(fetch(SB_URL + 'ym_data?on_conflict=user_id,coll', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({ user_id: email, coll: coll, items: pack[coll], updated_at: new Date().toISOString() })
+    }).catch(function(){}));
+  });
+  return Promise.all(jobs).then(function(){ return true; }).catch(function(){ return false; });
+}
+function cloudMergePacks(a, b) {
+  var out = {}, keys = {};
+  [a||{}, b||{}].forEach(function(p){ Object.keys(p).forEach(function(k){ keys[k]=1; }); });
+  Object.keys(keys).forEach(function(k){
+    if (k === '_tomb') { out._tomb = Object.assign({}, (a&&a._tomb)||{}, (b&&b._tomb)||{}); return; }
+    var aa = Array.isArray(a&&a[k]) ? a[k] : [];
+    var bb = Array.isArray(b&&b[k]) ? b[k] : [];
+    if (!aa.length) out[k] = bb;
+    else if (!bb.length) out[k] = aa;
+    else if (typeof cloudMergeItems === 'function') out[k] = cloudMergeItems(aa, bb);
+    else out[k] = bb.length >= aa.length ? bb : aa;
+  });
+  return out;
+}
+
 var __cloudTimers = {};
 var __cloudPulling = false;
 
@@ -4316,13 +4364,15 @@ function cloudNotesWrite(email, pack) {
 }
 
 function cloudPushColl(coll, retried) {
-  // Tek koleksiyon değişince tüm paketi e-posta anahtarıyla yaz (cihazlar arası)
+  // Tek koleksiyon değişince tüm paketi e-posta anahtarıyla yaz (cihazlar arası + ekip)
   var email = '';
   try { email = String((state.user && (state.user.wsOwner || state.user.email)) || '').toLowerCase(); } catch (e) {}
   if (!email) return Promise.resolve(false);
   var pack = cloudPackFromLocal();
   return cloudNotesWrite(email, pack).then(function(ok) {
-    // ikincil: ym_data (auth varsa)
+    // Birincil paylaşım: ym_data user_id = workspace e-posta (admin + davetli aynı anahtar)
+    try { cloudYmDataWritePack(email, pack); } catch (e) {}
+    // İkincil: auth uuid (eski)
     var uid = cloudUserId();
     if (uid && Array.isArray(pack[coll])) {
       fetch(SB_URL + 'ym_data?on_conflict=user_id,coll', {
@@ -4348,7 +4398,10 @@ function cloudPushAll() {
     Object.keys(pack).forEach(function(k){ if (Array.isArray(pack[k]) && pack[k].length) any = true; });
   } catch (e) {}
   if (!any && window.__ymSkipEmptyCloudPush) return Promise.resolve(false);
-  return cloudNotesWrite(email, pack);
+  return cloudNotesWrite(email, pack).then(function(ok) {
+    try { if (typeof cloudYmDataWritePack === 'function') cloudYmDataWritePack(email, pack); } catch (e) {}
+    return ok;
+  });
 }
 
 function cloudPullAll() {
@@ -4360,12 +4413,19 @@ function cloudPullAll() {
   __cloudPulling = true;
   var pullFor = email;
   return cloudNotesRead(email).then(function(cur) {
+    var notesPack = (cur && cur.pack) || {};
+    var ydP = (typeof cloudYmDataReadPack === 'function')
+      ? cloudYmDataReadPack(email)
+      : Promise.resolve({});
+    return ydP.then(function(ydPack) {
     // oturum değiştiyse bu çekimi uygula
     var nowEmail = '';
     try { nowEmail = String((state.user && (state.user.wsOwner || state.user.email)) || '').toLowerCase(); } catch (e) {}
     if (nowEmail !== pullFor) return { changed: false, toPush: [] };
 
-    var pack = (cur && cur.pack) || {};
+    var pack = (typeof cloudMergePacks === 'function')
+      ? cloudMergePacks(notesPack, ydPack || {})
+      : Object.assign({}, notesPack, ydPack || {});
     var localPack = cloudPackFromLocal();
     var tombP = ymTombMerge(ymTombGet(), pack._tomb);
     ymTombSave(tombP);
@@ -4432,13 +4492,14 @@ function cloudPullAll() {
       } catch (e) {}
     });
     return { changed: changed, toPush: toPush };
+  });
   }).catch(function(e) {
     console.warn('cloud pull', e);
     return { changed: false, toPush: CLOUD_COLLS.slice() };
   }).then(function(res) {
     __cloudPulling = false;
     return res;
-  });
+  }).catch(function(){ __cloudPulling = false; return { changed: false, toPush: [] }; });
 }
 
 
@@ -5751,10 +5812,13 @@ function enterApp() {
     if (state.user && !(state.user.isDemo || state.user.demo || state._demo)) {
       cloudSyncAfterLogin(state.user).then(function() {
         try{ if(typeof ymEFaturaInboxPull==='function') ymEFaturaInboxPull(); }catch(e){}
-
+        // Admin (workspace sahibi): veriyi buluta yaz ki davetliler görsün
         try {
-          var el = document.getElementById('trialBox');
-          // sessiz yenile
+          if (state.user && !state.user.wsOwner && typeof cloudPushAll === 'function') {
+            cloudPushAll();
+          }
+        } catch (e) {}
+        try {
           if (state.page) go(state.page);
         } catch (e) {}
       });
@@ -5767,16 +5831,26 @@ function enterApp() {
   var tick = function(){
     try {
       if (!state.user || state.user.isDemo) return;
-      if (typeof cloudPullAll !== 'function') return;
       if (document.visibilityState === 'hidden') return;
-      cloudPullAll().then(function(res){
-        if (res && res.changed) {
-          try { if (state.page) go(state.page); } catch(e){}
-        }
-      });
+      // Sahip: sürekli buluta yaz (ekip görsün). Üye: çek.
+      if (!state.user.wsOwner && typeof cloudPushAll === 'function') {
+        cloudPushAll();
+      }
+      if (typeof cloudPullAll === 'function') {
+        cloudPullAll().then(function(res){
+          if (!(res && res.changed)) return;
+          try {
+            // Form / yazı ekranlarında tam yenileme yapma
+            if (state._view && (state._view.form || state._view.kf || state._view.edit)) return;
+            if (typeof ymIsTyping === 'function' && ymIsTyping()) return;
+            if (state.page === 'kullanicilar') return; // kullanıcılar kendi senkronuna sahip
+            if (state.page) go(state.page);
+          } catch(e){}
+        });
+      }
     } catch(e){}
   };
-  setInterval(tick, 45000);
+  setInterval(tick, 30000);
   document.addEventListener('visibilitychange', function(){
     if (document.visibilityState === 'visible') tick();
   });
@@ -6362,15 +6436,25 @@ function setMember(inv){
   u.wsInvId=inv.id;
   try{ if(typeof clearUserKeyCache==='function') clearUserKeyCache(); }catch(e){}
   persist(u);
-  // Admin verisini hemen çek
   try {
-    setTimeout(function(){
-      if (typeof cloudPullAll === 'function') {
-        cloudPullAll().then(function(){
-          try { if (state.page) go(state.page); else go('home'); } catch(e){}
-        });
-      }
-    }, 400);
+    if (typeof pushAct === 'function') pushAct('Ekibe katıldı / ortak hesaba bağlandı');
+  } catch(e){}
+  // Admin verisini birkaç kez dene (admin buluta yazdıysa gelir)
+  try {
+    var tryPull = function(n){
+      if (typeof cloudPullAll !== 'function') return;
+      cloudPullAll().then(function(){
+        if (n > 0) setTimeout(function(){ tryPull(n-1); }, 3000);
+        else {
+          try {
+            if (state._view && (state._view.form || state._view.kf)) return;
+            if (state.page === 'kullanicilar') return;
+            if (state.page) go(state.page); else go('home');
+          } catch(e){}
+        }
+      });
+    };
+    setTimeout(function(){ tryPull(2); }, 800);
   } catch(e){}
 }
 function clearMember(){
@@ -6473,21 +6557,27 @@ function listHTML(){
   try {
     if(!state._tmp) state._tmp = {};
     var c = ctx();
-    if(!state._tmp.kSync){
-      state._tmp.kSync = 1;
-      try {
+    // Davetleri en fazla 60 sn'de bir çek — sürekli go() döngüsü olmasın
+    try {
+      var now = Date.now();
+      if (!window.__ymKullaniciSyncAt || (now - window.__ymKullaniciSyncAt) > 60000) {
+        window.__ymKullaniciSyncAt = now;
         ymInvFetchByFrom(c.no).then(function(rows){
           var cur = ymUserInvitesRead();
+          var before = JSON.stringify(cur);
           (rows||[]).forEach(function(s){
             var i = cur.findIndex(function(x){ return String(x.id)===String(s.id); });
             if(i>=0) cur[i]=s; else cur.push(s);
           });
+          var after = JSON.stringify(cur);
+          if (before === after) return; // değişiklik yok → yenileme yok
           ymUserInvitesWrite(cur);
-          // Form açıkken veya yazı yazılırken yenileme
-          if(state.page==='kullanicilar' && !(state._view && state._view.kf) && !(typeof ymIsTyping==='function' && ymIsTyping())) go('kullanicilar');
-        });
-      } catch(e){}
-    }
+          if(state.page==='kullanicilar' && !(state._view && state._view.kf) && !(typeof ymIsTyping==='function' && ymIsTyping())) {
+            go('kullanicilar');
+          }
+        }).catch(function(){});
+      }
+    } catch(e){}
     var STATUS = { pending:['wait','Bekliyor'], accepted:['ok','Aktif'], rejected:['no','Reddedildi'], removed:['no','Kaldırıldı'] };
     var recs = teamRecs();
     var invs = ymUserInvitesRead().filter(function(x){ return String(x.fromNo)===String(c.no||'') && x.status!=='removed'; }).reverse();
@@ -7693,6 +7783,13 @@ function pushAct(text) {
   if (!Array.isArray(a)) a = [];
   var who = (state.user && (state.user.name || state.user.email)) ? (state.user.name || state.user.email) : 'Sistem';
   var mno = state.user && state.user.musteriNo ? String(state.user.musteriNo) : '';
+  // Metinde isim yoksa öne ekle (Son İşlemler: YUNUS, E-Fatura kesti)
+  try {
+    var t0 = String(text || '');
+    if (who && t0 && t0.indexOf(who) !== 0 && !/^sistem/i.test(t0)) {
+      text = who + (mno ? ' (' + mno + ')' : '') + ', ' + t0;
+    }
+  } catch (e) {}
   var now = new Date().toISOString();
   // 2 dk içinde aynı kullanıcı + aynı metin → tekrar yazma (çoklu giriş logu)
   var cutoff = Date.now() - 120000;
