@@ -3646,6 +3646,7 @@ tr.cari-pasif:hover td{background:#c4c8cf!important}
             <div class="um-no">Müşteri No: <span id="umMusteriNo">—</span></div>
             <button type="button" onclick="event.stopPropagation();go('profilim');closeUserMenu()"><span>Profilim</span></button>
             <button type="button" onclick="event.stopPropagation();openOdeme();closeUserMenu()"><span>Hesabım</span></button>
+            <button type="button" onclick="event.stopPropagation();closeUserMenu();if(typeof ymForceWorkspaceSync==='function')ymForceWorkspaceSync({silent:false});else toast('Senkron yok')"><span>Verileri Senkronize Et</span></button>
             <button type="button" onclick="event.stopPropagation();doLogout();closeUserMenu()"><span>Çıkış</span></button>
           </div>
         </div>
@@ -4392,17 +4393,93 @@ function cloudPushAll() {
   try { email = String((state.user && (state.user.wsOwner || state.user.email)) || '').toLowerCase(); } catch (e) {}
   if (!email) return Promise.resolve(false);
   var pack = cloudPackFromLocal();
-  // Tüm koleksiyonlar boşsa ve yazma kilidi varsa atla (yanlışlıkla bulutu silme)
   var any = false;
   try {
-    Object.keys(pack).forEach(function(k){ if (Array.isArray(pack[k]) && pack[k].length) any = true; });
+    Object.keys(pack).forEach(function(k){ if (k !== '_tomb' && Array.isArray(pack[k]) && pack[k].length) any = true; });
   } catch (e) {}
   if (!any && window.__ymSkipEmptyCloudPush) return Promise.resolve(false);
-  return cloudNotesWrite(email, pack).then(function(ok) {
-    try { if (typeof cloudYmDataWritePack === 'function') cloudYmDataWritePack(email, pack); } catch (e) {}
-    return ok;
+
+  // 1) ym_data birincil (koleksiyon koleksiyon, büyük veri güvenli)
+  var p1 = (typeof cloudYmDataWritePack === 'function')
+    ? cloudYmDataWritePack(email, pack)
+    : Promise.resolve(false);
+  // 2) notes yedek (küçük paketler)
+  var p2 = cloudNotesWrite(email, pack).catch(function(){ return false; });
+  return Promise.all([p1, p2]).then(function(arr){
+    window.__ymLastCloudPush = { at: Date.now(), email: email, ok: !!(arr[0] || arr[1]) };
+    return !!(arr[0] || arr[1]);
   });
 }
+
+/** Zorunlu tam senkron: admin yazar, üye çeker, sonucu uygular */
+window.ymForceWorkspaceSync = function(opts) {
+  opts = opts || {};
+  var silent = !!opts.silent;
+  if (!state.user || !state.user.email) {
+    if (!silent) toast('Oturum yok');
+    return Promise.resolve(false);
+  }
+  try { if (typeof clearUserKeyCache === 'function') clearUserKeyCache(); } catch (e) {}
+  var email = String(state.user.wsOwner || state.user.email).toLowerCase();
+  var isMember = !!state.user.wsOwner;
+
+  // app_customers satırı yoksa oluştur (PATCH/notes için)
+  var ensureCust = fetch(SB_URL + 'app_customers?email=eq.' + encodeURIComponent(email) + '&select=email', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  }).then(function(r){ return r.ok ? r.json() : []; }).then(function(rows){
+    if (rows && rows[0]) return true;
+    return fetch(SB_URL + 'app_customers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({
+        email: email,
+        full_name: state.user.wsOwnerName || state.user.name || email,
+        musteri_no: String(state.user.wsOwnerNo || state.user.musteriNo || ''),
+        plan: 'trial'
+      })
+    }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+  }).catch(function(){ return false; });
+
+  return ensureCust.then(function(){
+    if (!isMember) {
+      // Admin: tüm yerel veriyi buluta yaz
+      return cloudPushAll().then(function(ok){
+        if (!silent) toast(ok ? 'Veriler buluta yazıldı (ekip görebilir)' : 'Buluta yazılamadı — Supabase tablolarını kontrol edin');
+        return ok;
+      });
+    }
+    // Üye: önce çek, uygula
+    return cloudPullAll().then(function(res){
+      // Ekstra: ym_data direkt uygula
+      return (typeof cloudYmDataReadPack === 'function' ? cloudYmDataReadPack(email) : Promise.resolve({})).then(function(yd){
+        var applied = 0;
+        try {
+          Object.keys(yd || {}).forEach(function(coll){
+            if (!Array.isArray(yd[coll]) || !yd[coll].length) return;
+            if (typeof CLOUD_COLLS !== 'undefined' && CLOUD_COLLS.indexOf(coll) < 0) return;
+            localStorage.setItem(sk(coll), JSON.stringify(yd[coll]));
+            applied++;
+          });
+        } catch (e) {}
+        window.__ymLastCloudPull = { at: Date.now(), email: email, applied: applied };
+        if (!silent) {
+          if (applied > 0 || (res && res.changed)) {
+            toast('Yönetici verisi senkronize edildi (' + applied + ' tablo)');
+            try { if (state.page) go(state.page); } catch (e) {}
+          } else {
+            toast('Henüz ortak veri yok — yönetici bir kez giriş yapıp senkron etmeli');
+          }
+        }
+        return applied > 0 || !!(res && res.changed);
+      });
+    });
+  });
+};
 
 function cloudPullAll() {
   try { if (state.user && (state.user.isDemo || state.user.demo || state._demo)) return Promise.resolve(false); } catch(e) {}
@@ -5812,9 +5889,12 @@ function enterApp() {
     if (state.user && !(state.user.isDemo || state.user.demo || state._demo)) {
       cloudSyncAfterLogin(state.user).then(function() {
         try{ if(typeof ymEFaturaInboxPull==='function') ymEFaturaInboxPull(); }catch(e){}
-        // Admin (workspace sahibi): veriyi buluta yaz ki davetliler görsün
         try {
-          if (state.user && !state.user.wsOwner && typeof cloudPushAll === 'function') {
+          if (typeof ymForceWorkspaceSync === 'function') {
+            ymForceWorkspaceSync({ silent: true }).then(function(){
+              try { if (state.page) go(state.page); } catch(e){}
+            });
+          } else if (state.user && !state.user.wsOwner && typeof cloudPushAll === 'function') {
             cloudPushAll();
           }
         } catch (e) {}
@@ -6441,20 +6521,19 @@ function setMember(inv){
   } catch(e){}
   // Admin verisini birkaç kez dene (admin buluta yazdıysa gelir)
   try {
-    var tryPull = function(n){
-      if (typeof cloudPullAll !== 'function') return;
-      cloudPullAll().then(function(){
-        if (n > 0) setTimeout(function(){ tryPull(n-1); }, 3000);
-        else {
+    setTimeout(function(){
+      if (typeof ymForceWorkspaceSync === 'function') {
+        ymForceWorkspaceSync({ silent: false }).then(function(){
           try {
             if (state._view && (state._view.form || state._view.kf)) return;
-            if (state.page === 'kullanicilar') return;
-            if (state.page) go(state.page); else go('home');
+            go('home');
           } catch(e){}
-        }
-      });
-    };
-    setTimeout(function(){ tryPull(2); }, 800);
+        });
+      }
+    }, 600);
+    setTimeout(function(){
+      if (typeof ymForceWorkspaceSync === 'function') ymForceWorkspaceSync({ silent: true });
+    }, 4000);
   } catch(e){}
 }
 function clearMember(){
