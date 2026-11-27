@@ -10644,6 +10644,17 @@ window.saveVarDeger = function(vid, idx) {
   var v = list.find(function(x) { return x.id === vid; });
   if (!v) return;
   v.degerler = v.degerler || [];
+  var valLow = val.toLowerCase();
+  var dupIdx = -1;
+  for (var i = 0; i < v.degerler.length; i++) {
+    if (idx >= 0 && i === Number(idx)) continue;
+    if (String(v.degerler[i] || '').trim().toLowerCase() === valLow) { dupIdx = i; break; }
+  }
+  if (dupIdx >= 0) {
+    if (typeof ymAlert === 'function') ymAlert('Bu varyant değeri zaten kayıtlı: "' + v.degerler[dupIdx] + '". Aynı değer tekrar eklenemez.', 'Uyarı');
+    else toast('Bu varyant değeri zaten var: ' + v.degerler[dupIdx]);
+    return;
+  }
   if (idx >= 0) v.degerler[idx] = val;
   else v.degerler.push(val);
   dbSet('varyantlar', list);
